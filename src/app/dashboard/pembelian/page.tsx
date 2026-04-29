@@ -67,47 +67,51 @@ export default function PembelianPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
-            <table className="w-full text-[13px] border-collapse">
-              <thead>
-                <tr className="bg-white border-b border-[#e4e7ec]">
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Tanggal Masuk</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Expired</th>
-                  <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Supplier</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={6} className="text-center py-12 text-[#98a2b3]">Memuat data pembelian...</td></tr>
-                ) : filteredHistory.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-12">
-                      <PackageCheck className="h-10 w-10 text-[#d0d5dd] mx-auto mb-2" />
-                      <p className="text-[#98a2b3] text-[13.5px]">Belum ada data riwayat pembelian</p>
-                    </td>
-                  </tr>
-                ) : filteredHistory.map(h => (
-                  <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
-                    <td className="px-4 py-3 text-[#344054]">
-                      {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-[#101828]">{h.medicine?.name || "-"}</td>
-                    <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085]">{h.batch_number}</td>
-                    <td className="px-4 py-3 text-[#344054]">
-                      {new Date(h.expired_date).toLocaleDateString("id-ID")}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-[#0f766e] text-right">+{h.stock} {h.medicine?.unit}</td>
-                    <td className="px-4 py-3 text-[#667085]">{h.supplier?.name || "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {loading || filteredHistory.length === 0 ? (
+          <div className="py-12 px-4 text-center">
+            {loading ? (
+              <p className="text-[#98a2b3] text-[13.5px]">Memuat data pembelian...</p>
+            ) : (
+              <>
+                <PackageCheck className="h-10 w-10 text-[#d0d5dd] mx-auto mb-2" />
+                <p className="text-[#98a2b3] text-[13.5px]">Belum ada data riwayat pembelian</p>
+              </>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              <table className="w-full text-[13px] border-collapse">
+                <thead>
+                  <tr className="bg-white border-b border-[#e4e7ec]">
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Tanggal Masuk</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Expired</th>
+                    <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Supplier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredHistory.map(h => (
+                    <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
+                      <td className="px-4 py-3 text-[#344054]">
+                        {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-[#101828]">{h.medicine?.name || "-"}</td>
+                      <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085]">{h.batch_number}</td>
+                      <td className="px-4 py-3 text-[#344054]">
+                        {new Date(h.expired_date).toLocaleDateString("id-ID")}
+                      </td>
+                      <td className="px-4 py-3 font-bold text-[#0f766e] text-right">+{h.stock} {h.medicine?.unit}</td>
+                      <td className="px-4 py-3 text-[#667085]">{h.supplier?.name || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

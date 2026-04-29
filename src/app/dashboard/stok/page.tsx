@@ -121,61 +121,65 @@ export default function StokPage() {
 
       {/* Table Area */}
       <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
-            <table className="w-full text-[13px] border-collapse">
-              <thead>
-                <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
-                  {["Nama Obat", "Barcode", "No. Batch", "Expired", "Stok", "Supplier", "Status"].map(h => (
-                    <th key={h} className="text-left px-4 py-2.5 font-semibold text-[#667085]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-[#98a2b3]">Memuat data...</td></tr>
-                ) : batches.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-12">
-                      <PackagePlus className="h-10 w-10 text-[#d0d5dd] mx-auto mb-2" />
-                      <p className="text-[#98a2b3] text-[13.5px]">Belum ada data batch</p>
-                    </td>
-                  </tr>
-                ) : batches.map(b => {
-                  const isExpired = b.expired_date < today;
-                  const isWarn = !isExpired && b.expired_date <= warnDate;
-                  return (
-                    <tr key={b.id} className={`border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors ${isExpired ? "opacity-60" : ""}`}>
-                      <td className="px-4 py-3 font-semibold text-[#101828]">{b.medicine?.name || "-"}</td>
-                      <td className="px-4 py-3 text-[#667085] font-mono text-[12px]">{b.medicine?.barcode || "-"}</td>
-                      <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#344054]">{b.batch_number}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-md text-[12px] font-semibold ${
-                          isExpired ? "bg-gray-100 text-gray-600 border border-gray-200" :
-                          isWarn ? "bg-[#fffbeb] text-[#92400e] border border-[#fcd34d]" :
-                          "bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]"
-                        }`}>
-                          {new Date(b.expired_date).toLocaleDateString("id-ID")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-bold text-[#101828]">{b.stock}</td>
-                      <td className="px-4 py-3 text-[#667085] text-[12.5px]">{b.supplier?.name || "-"}</td>
-                      <td className="px-4 py-3">
-                        {isExpired ? (
-                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
-                        ) : isWarn ? (
-                          <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
-                        ) : (
-                          <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {loading || batches.length === 0 ? (
+          <div className="py-12 px-4 text-center">
+            {loading ? (
+              <p className="text-[#98a2b3] text-[13.5px]">Memuat data...</p>
+            ) : (
+              <>
+                <PackagePlus className="h-10 w-10 text-[#d0d5dd] mx-auto mb-2" />
+                <p className="text-[#98a2b3] text-[13.5px]">Belum ada data batch</p>
+              </>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              <table className="w-full text-[13px] border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
+                    {["Nama Obat", "Barcode", "No. Batch", "Expired", "Stok", "Supplier", "Status"].map(h => (
+                      <th key={h} className="text-left px-4 py-2.5 font-semibold text-[#667085]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {batches.map(b => {
+                    const isExpired = b.expired_date < today;
+                    const isWarn = !isExpired && b.expired_date <= warnDate;
+                    return (
+                      <tr key={b.id} className={`border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors ${isExpired ? "opacity-60" : ""}`}>
+                        <td className="px-4 py-3 font-semibold text-[#101828]">{b.medicine?.name || "-"}</td>
+                        <td className="px-4 py-3 text-[#667085] font-mono text-[12px]">{b.medicine?.barcode || "-"}</td>
+                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#344054]">{b.batch_number}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-md text-[12px] font-semibold ${
+                            isExpired ? "bg-gray-100 text-gray-600 border border-gray-200" :
+                            isWarn ? "bg-[#fffbeb] text-[#92400e] border border-[#fcd34d]" :
+                            "bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]"
+                          }`}>
+                            {new Date(b.expired_date).toLocaleDateString("id-ID")}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-[#101828]">{b.stock}</td>
+                        <td className="px-4 py-3 text-[#667085] text-[12.5px]">{b.supplier?.name || "-"}</td>
+                        <td className="px-4 py-3">
+                          {isExpired ? (
+                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
+                          ) : isWarn ? (
+                            <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
+                          ) : (
+                            <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Tambah Batch */}

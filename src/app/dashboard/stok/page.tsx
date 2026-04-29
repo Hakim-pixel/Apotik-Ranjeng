@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { PackagePlus, Plus, X, CheckCircle, AlertCircle, Search } from "lucide-react";
+import { PackagePlus, X, CheckCircle, AlertCircle, Search } from "lucide-react";
 
 type Medicine = { id: string; name: string; barcode: string; unit: string };
 type Supplier = { id: string; name: string };
@@ -97,115 +97,120 @@ export default function StokPage() {
   const warnDate = threeMonths.toISOString().split("T")[0];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-[1200px] w-full mx-auto pb-8 md:pb-0">
       {toast && (
-        <div className={`fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
-          toast.type === "success" ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+        <div className={`fixed top-16 md:top-4 right-4 z-50 px-4 py-2.5 rounded-md text-white text-[13.5px] font-semibold shadow-lg transition-all ${
+          toast.type === "success" ? "bg-[#16a34a]" : "bg-[#dc2626]"
         }`}>
-          {toast.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          {toast.type === "success" ? <CheckCircle className="h-4 w-4 inline mr-1.5" /> : <AlertCircle className="h-4 w-4 inline mr-1.5" />}
           {toast.msg}
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Stok & Batch</h1>
-          <p className="text-sm text-zinc-500 mt-1">Urutan berdasarkan FEFO – expired paling dekat tampil di atas</p>
+          <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Stok & Batch</h1>
+          <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">Urutan berdasarkan FEFO – expired paling dekat tampil di atas</p>
         </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-          <PackagePlus className="h-4 w-4" /> Tambah Batch
+          className="flex items-center justify-center gap-2 bg-[#0f766e] hover:bg-[#0d6963] text-white px-4 py-2 rounded-md text-[13.5px] font-semibold transition-colors shrink-0">
+          <PackagePlus size={16} /> Tambah Batch
         </button>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      {/* Table Area */}
+      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                {["Nama Obat", "Barcode", "No. Batch", "Expired", "Stok", "Supplier", "Status"].map(h => (
-                  <th key={h} className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {loading ? (
-                <tr><td colSpan={7} className="text-center py-12 text-zinc-400">Memuat data...</td></tr>
-              ) : batches.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-12">
-                    <PackagePlus className="h-10 w-10 text-zinc-300 mx-auto mb-2" />
-                    <p className="text-zinc-400 text-sm">Belum ada data batch</p>
-                  </td>
+          <div className="min-w-[800px]">
+            <table className="w-full text-[13px] border-collapse">
+              <thead>
+                <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
+                  {["Nama Obat", "Barcode", "No. Batch", "Expired", "Stok", "Supplier", "Status"].map(h => (
+                    <th key={h} className="text-left px-4 py-2.5 font-semibold text-[#667085]">{h}</th>
+                  ))}
                 </tr>
-              ) : batches.map(b => {
-                const isExpired = b.expired_date < today;
-                const isWarn = !isExpired && b.expired_date <= warnDate;
-                return (
-                  <tr key={b.id} className={`hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${isExpired ? "opacity-60" : ""}`}>
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">{b.medicine?.name || "-"}</td>
-                    <td className="px-4 py-3 text-zinc-500 font-mono text-xs">{b.medicine?.barcode || "-"}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-zinc-700 dark:text-zinc-300">{b.batch_number}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        isExpired ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-500" :
-                        isWarn ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400" :
-                        "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-                      }`}>
-                        {new Date(b.expired_date).toLocaleDateString("id-ID")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-bold text-zinc-900 dark:text-white">{b.stock}</td>
-                    <td className="px-4 py-3 text-zinc-500 text-xs">{b.supplier?.name || "-"}</td>
-                    <td className="px-4 py-3">
-                      {isExpired ? (
-                        <span className="bg-zinc-200 dark:bg-zinc-700 text-zinc-500 px-2 py-0.5 rounded-full text-xs font-medium">Expired</span>
-                      ) : isWarn ? (
-                        <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full text-xs font-medium">⚠ Segera Habis</span>
-                      ) : (
-                        <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-xs font-medium">OK</span>
-                      )}
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={7} className="text-center py-12 text-[#98a2b3]">Memuat data...</td></tr>
+                ) : batches.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12">
+                      <PackagePlus className="h-10 w-10 text-[#d0d5dd] mx-auto mb-2" />
+                      <p className="text-[#98a2b3] text-[13.5px]">Belum ada data batch</p>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : batches.map(b => {
+                  const isExpired = b.expired_date < today;
+                  const isWarn = !isExpired && b.expired_date <= warnDate;
+                  return (
+                    <tr key={b.id} className={`border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors ${isExpired ? "opacity-60" : ""}`}>
+                      <td className="px-4 py-3 font-semibold text-[#101828]">{b.medicine?.name || "-"}</td>
+                      <td className="px-4 py-3 text-[#667085] font-mono text-[12px]">{b.medicine?.barcode || "-"}</td>
+                      <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#344054]">{b.batch_number}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded-md text-[12px] font-semibold ${
+                          isExpired ? "bg-gray-100 text-gray-600 border border-gray-200" :
+                          isWarn ? "bg-[#fffbeb] text-[#92400e] border border-[#fcd34d]" :
+                          "bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]"
+                        }`}>
+                          {new Date(b.expired_date).toLocaleDateString("id-ID")}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-bold text-[#101828]">{b.stock}</td>
+                      <td className="px-4 py-3 text-[#667085] text-[12.5px]">{b.supplier?.name || "-"}</td>
+                      <td className="px-4 py-3">
+                        {isExpired ? (
+                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
+                        ) : isWarn ? (
+                          <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
+                        ) : (
+                          <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal Tambah Batch */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-800">
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Tambah Batch / Restok</h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                <X className="h-5 w-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-[#e4e7ec] bg-[#f8f9fb]">
+              <h2 className="text-[16px] font-bold text-[#101828]">Tambah Batch / Restok</h2>
+              <button onClick={() => setShowModal(false)} className="p-1 rounded-md hover:bg-gray-200 text-[#667085] transition-colors">
+                <X size={18} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            
+            <div className="p-5 space-y-4 overflow-y-auto">
               {/* Cari obat */}
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Nama Obat *</label>
+                <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Nama Obat *</label>
                 {selectedMedName ? (
-                  <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2 rounded-xl">
-                    <span className="text-sm font-medium text-emerald-800 dark:text-emerald-300 flex-1">{selectedMedName}</span>
+                  <div className="flex items-center gap-2 bg-[#f0fdf4] border border-[#bbf7d0] px-3 py-2 rounded-md">
+                    <span className="text-[13.5px] font-semibold text-[#14532d] flex-1">{selectedMedName}</span>
                     <button onClick={() => { setSelectedMedName(""); setForm({ ...form, medicine_id: "" }); }}
-                      className="text-emerald-600 hover:text-red-500 transition-colors"><X className="h-4 w-4" /></button>
+                      className="text-[#16a34a] hover:text-[#dc2626] transition-colors p-1"><X size={14} /></button>
                   </div>
                 ) : (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#98a2b3]" />
                     <input type="text" placeholder="Cari obat..." value={searchMed}
                       onChange={(e) => setSearchMed(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      className="w-full pl-9 pr-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                     {medResults.length > 0 && (
-                      <div className="absolute z-10 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl mt-1 shadow-lg overflow-hidden">
+                      <div className="absolute z-10 w-full bg-white border border-[#e4e7ec] rounded-md mt-1 shadow-lg overflow-hidden max-h-[200px] overflow-y-auto">
                         {medResults.map(m => (
                           <button key={m.id} onClick={() => selectMedicine(m)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors text-zinc-900 dark:text-white">
-                            {m.name} <span className="text-zinc-400 text-xs">({m.barcode})</span>
+                            className="w-full text-left px-3 py-2.5 text-[13px] hover:bg-[#f8f9fb] transition-colors text-[#101828] font-medium border-b border-[#f0f2f5] last:border-0">
+                            {m.name} <span className="text-[#98a2b3] text-[11px] font-mono ml-1">({m.barcode})</span>
                           </button>
                         ))}
                       </div>
@@ -213,42 +218,48 @@ export default function StokPage() {
                   </div>
                 )}
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">No. Batch / Lot *</label>
+                <label className="block text-[13px] font-bold text-[#344054] mb-1.5">No. Batch / Lot *</label>
                 <input type="text" placeholder="cth. LOT-20251201" value={form.batch_number}
                   onChange={(e) => setForm({ ...form, batch_number: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] font-mono outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
               </div>
+              
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Tgl Expired *</label>
+                  <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Tgl Expired *</label>
                   <input type="date" value={form.expired_date} min={today}
                     onChange={(e) => setForm({ ...form, expired_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Jumlah Stok *</label>
+                  <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Jumlah Stok *</label>
                   <input type="number" min="1" placeholder="0" value={form.stock}
                     onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                 </div>
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Supplier</label>
+                <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Supplier</label>
                 <select value={form.supplier_id} onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors bg-white">
                   <option value="">-- Pilih Supplier --</option>
                   {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
             </div>
-            <div className="px-6 pb-6 flex gap-3">
+            
+            <div className="px-5 py-4 border-t border-[#e4e7ec] flex gap-3 bg-[#f8f9fb]">
               <button onClick={() => setShowModal(false)}
-                className="flex-1 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                className="flex-1 py-2 bg-white border border-[#d0d5dd] rounded-md text-[13.5px] font-semibold text-[#344054] hover:bg-gray-50 transition-colors">
                 Batal
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors">
+                className={`flex-1 py-2 rounded-md text-[13.5px] font-semibold text-white transition-colors ${
+                  saving ? "bg-[#99d6d1] cursor-not-allowed" : "bg-[#0f766e] hover:bg-[#0d6963]"
+                }`}>
                 {saving ? "Menyimpan..." : "Simpan Batch"}
               </button>
             </div>

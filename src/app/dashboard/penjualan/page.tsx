@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer, ShoppingCart } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer, ShoppingCart, Tag } from "lucide-react";
 
 type Medicine = {
   id: string; name: string; barcode: string;
@@ -32,6 +33,10 @@ function StrukModal({ invoice, bayar, kembalian, onClose }: { invoice: InvoiceDa
   };
 
   const tgl = new Date(invoice.created_at).toLocaleString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  
+  // Hitung total asli sebelum diskon
+  const originalTotal = invoice.details?.reduce((sum, d) => sum + d.subtotal, 0) || 0;
+  const discountAmount = originalTotal - invoice.total_amount;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
@@ -66,7 +71,17 @@ function StrukModal({ invoice, bayar, kembalian, onClose }: { invoice: InvoiceDa
             ))}
 
             <div className="border-t border-dashed border-gray-400 my-2"></div>
-            <div className="flex justify-between font-bold text-[13px] font-mono">
+            {discountAmount > 0 && (
+              <>
+                <div className="flex justify-between text-[12px] font-mono mt-1">
+                  <span>Subtotal</span><span>{fmt(originalTotal)}</span>
+                </div>
+                <div className="flex justify-between text-[12px] font-mono mt-1 text-red-600">
+                  <span>Diskon</span><span>-{fmt(discountAmount)}</span>
+                </div>
+              </>
+            )}
+            <div className="flex justify-between font-bold text-[13px] font-mono mt-1">
               <span>TOTAL</span><span>{fmt(invoice.total_amount)}</span>
             </div>
             <div className="flex justify-between text-[12px] font-mono mt-1">
@@ -94,6 +109,9 @@ function StrukModal({ invoice, bayar, kembalian, onClose }: { invoice: InvoiceDa
 }
 
 export default function PenjualanPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const [search, setSearch] = useState("");
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -102,6 +120,7 @@ export default function PenjualanPage() {
   const [toast, setToast] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [bayar, setBayar] = useState("");
+  const [diskon, setDiskon] = useState("");
   const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [showAlert, setShowAlert] = useState(true);
 
@@ -151,22 +170,27 @@ export default function PenjualanPage() {
     }));
   };
 
-  const total = cart.reduce((s, c) => s + c.sell_price * c.qty, 0);
+  const subtotalTagihan = cart.reduce((s, c) => s + c.sell_price * c.qty, 0);
+  const diskonNum = parseInt(diskon.replace(/\D/g, ""), 10) || 0;
+  const totalTagihan = Math.max(0, subtotalTagihan - diskonNum);
   const bayarNum = parseInt(bayar.replace(/\D/g, ""), 10) || 0;
-  const kembalian = bayarNum - total;
+  const kembalian = bayarNum - totalTagihan;
 
   const handleCheckout = async () => {
     if (cart.length === 0) { showToast("err", "Keranjang kosong!"); return; }
-    if (bayarNum < total) { showToast("err", "Uang bayar kurang!"); return; }
+    if (bayarNum < totalTagihan) { showToast("err", "Uang bayar kurang!"); return; }
     setProcessing(true);
     const res = await fetch("/api/penjualan", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: cart.map(c => ({ medicine_id: c.id, qty: c.qty })) }),
+      body: JSON.stringify({ 
+        items: cart.map(c => ({ medicine_id: c.id, qty: c.qty })),
+        discount: diskonNum
+      }),
     });
     const data = await res.json();
     setProcessing(false);
     if (!res.ok) { showToast("err", data.error || "Transaksi gagal."); return; }
-    setInvoice(data); setCart([]); setBayar("");
+    setInvoice(data); setCart([]); setBayar(""); setDiskon("");
     fetch("/api/restock-alert").then(r => r.json()).then(d => { if (Array.isArray(d)) setLowStock(d); });
   };
 
@@ -308,7 +332,7 @@ export default function PenjualanPage() {
                     {fmt(n)}
                   </button>
                 ))}
-                <button onClick={() => setBayar(total.toLocaleString("id-ID"))} className="px-2.5 py-1.5 border border-[#0f766e] rounded bg-[#f0fdf4] text-[12px] font-bold text-[#0f766e]">Uang Pas</button>
+                <button onClick={() => setBayar(totalTagihan.toLocaleString("id-ID"))} className="px-2.5 py-1.5 border border-[#0f766e] rounded bg-[#f0fdf4] text-[12px] font-bold text-[#0f766e]">Uang Pas</button>
               </div>
 
               {bayarNum > 0 && (
@@ -373,10 +397,35 @@ export default function PenjualanPage() {
             </div>
 
             <div className="p-4 border-t border-[#e4e7ec] bg-white rounded-b-lg shrink-0">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-[14px] text-[#667085] font-semibold">Total Tagihan</span>
-                <span className="text-[18px] font-bold text-[#101828]">{fmt(total)}</span>
+              {isAdmin && (
+                <div className="mb-3">
+                  <label className="text-[12px] font-semibold text-[#667085] mb-1 flex items-center gap-1"><Tag size={12}/> Diskon (Rp)</label>
+                  <input
+                    type="text"
+                    placeholder="0"
+                    value={diskon}
+                    onChange={e => {
+                      const v = e.target.value.replace(/\D/g, "");
+                      setDiskon(v ? parseInt(v).toLocaleString("id-ID") : "");
+                    }}
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[14px] font-mono focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
+                  />
+                </div>
+              )}
+              
+              <div className="flex flex-col gap-1.5 mb-3">
+                {isAdmin && diskonNum > 0 && (
+                  <div className="flex justify-between items-center text-[13px]">
+                    <span className="text-[#667085]">Subtotal</span>
+                    <span className="font-medium text-[#344054]">{fmt(subtotalTagihan)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-[14px] text-[#667085] font-semibold">Total Tagihan</span>
+                  <span className="text-[18px] font-bold text-[#101828]">{fmt(totalTagihan)}</span>
+                </div>
               </div>
+              
               <button
                 onClick={handleCheckout}
                 disabled={processing || cart.length === 0 || (bayarNum > 0 && kembalian < 0)}

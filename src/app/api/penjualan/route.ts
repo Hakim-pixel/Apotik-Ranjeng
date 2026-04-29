@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { items } = body; // [{ medicine_id, qty }]
+  const { items, discount } = body; // [{ medicine_id, qty }], discount: number
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: "Keranjang belanja kosong." }, { status: 400 });
@@ -80,10 +80,13 @@ export async function POST(req: Request) {
     }
   }
 
+  const discountAmount = discount ? Number(discount) : 0;
+  const finalAmount = Math.max(0, totalAmount - discountAmount);
+
   // Buat transaksi header
   const { data: transaction, error: txError } = await supabase
     .from("transactions")
-    .insert([{ invoice_number: invoiceNumber, type: "OUT", user_id: session.user.id, total_amount: totalAmount }])
+    .insert([{ invoice_number: invoiceNumber, type: "OUT", user_id: session.user.id, total_amount: finalAmount }])
     .select()
     .single();
 

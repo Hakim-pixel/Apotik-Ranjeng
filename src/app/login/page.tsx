@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Activity } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,7 +23,7 @@ export default function LoginPage() {
     });
 
     if (res?.error) {
-      setError("Email atau password salah.");
+      setError("Email atau password salah. Periksa kembali.");
       setLoading(false);
     } else {
       router.push("/dashboard");
@@ -33,82 +32,98 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="bg-emerald-600 p-3 rounded-xl shadow-lg">
-            <Activity className="h-10 w-10 text-white" />
+    <div style={{
+      minHeight: "100vh", background: "#f0f2f5",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <div style={{
+        background: "#fff", border: "1px solid #e4e7ec", borderRadius: 10,
+        padding: "32px 36px", width: 360, boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{
+            width: 44, height: 44, background: "#0f766e", borderRadius: 10,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            marginBottom: 12,
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
           </div>
+          <h1 style={{ fontSize: 17, fontWeight: 700, color: "#101828", margin: 0 }}>Apotek Ranjeng</h1>
+          <p style={{ fontSize: 13, color: "#667085", margin: "4px 0 0" }}>Sistem Inventaris & Kasir</p>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-zinc-900 dark:text-white">
-          Sistem Inventaris Apotek
-        </h2>
-        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Masuk untuk mengelola stok dan transaksi
+
+        {/* Error */}
+        {error && (
+          <div style={{
+            background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 6,
+            padding: "8px 12px", fontSize: 13, color: "#991b1b", marginBottom: 16,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#344054", marginBottom: 5 }}>
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@apotik.com"
+              style={{
+                width: "100%", padding: "8px 10px", border: "1px solid #d0d5dd",
+                borderRadius: 6, fontSize: 13, outline: "none",
+                boxSizing: "border-box",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#0f766e")}
+              onBlur={e => (e.target.style.borderColor = "#d0d5dd")}
+            />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#344054", marginBottom: 5 }}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              style={{
+                width: "100%", padding: "8px 10px", border: "1px solid #d0d5dd",
+                borderRadius: 6, fontSize: 13, outline: "none",
+                boxSizing: "border-box",
+              }}
+              onFocus={e => (e.target.style.borderColor = "#0f766e")}
+              onBlur={e => (e.target.style.borderColor = "#d0d5dd")}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%", padding: "9px", background: loading ? "#99d6d1" : "#0f766e",
+              color: "#fff", border: "none", borderRadius: 6, fontSize: 14,
+              fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
+              marginTop: 4, transition: "background 0.15s",
+            }}
+          >
+            {loading ? "Memproses..." : "Masuk"}
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", fontSize: 11, color: "#98a2b3", marginTop: 20, marginBottom: 0 }}>
+          Lupa password? Hubungi administrator sistem.
         </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-zinc-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-zinc-200 dark:border-zinc-700">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded">
-                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-              </div>
-            )}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-              >
-                Alamat Email
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm dark:bg-zinc-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-              >
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md shadow-sm placeholder-zinc-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm dark:bg-zinc-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? "Memproses..." : "Masuk"}
-              </button>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   );

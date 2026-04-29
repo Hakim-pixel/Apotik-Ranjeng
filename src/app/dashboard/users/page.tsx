@@ -5,10 +5,9 @@ import { Users, Plus, X, CheckCircle, AlertCircle, Shield } from "lucide-react";
 
 type User = { id: string; name: string; email: string; role: string; created_at: string };
 
-const ROLES = ["ADMIN", "APOTEKER", "KASIR"];
+const ROLES = ["ADMIN", "KASIR"];
 const ROLE_CONFIG: Record<string, { color: string; label: string }> = {
   ADMIN: { color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400", label: "Admin" },
-  APOTEKER: { color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400", label: "Apoteker" },
   KASIR: { color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", label: "Kasir" },
 };
 
@@ -146,9 +145,9 @@ export default function UsersPage() {
                   {ROLES.map(r => <option key={r} value={r}>{ROLE_CONFIG[r].label}</option>)}
                 </select>
                 <p className="text-xs text-zinc-400 mt-1">
-                  {form.role === "KASIR" ? "⚠️ Kasir TIDAK bisa edit/hapus data obat atau ubah harga." :
-                   form.role === "APOTEKER" ? "ℹ️ Apoteker bisa kelola obat & stok, tapi TIDAK bisa ubah harga." :
-                   "🔑 Admin memiliki akses penuh ke seluruh sistem."}
+                  {form.role === "KASIR"
+                    ? "🛒 Kasir hanya bisa melakukan transaksi penjualan & melihat rekap harian."
+                    : "🔑 Admin memiliki akses penuh ke seluruh sistem."}
                 </p>
               </div>
             </div>

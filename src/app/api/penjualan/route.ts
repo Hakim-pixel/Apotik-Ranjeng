@@ -100,7 +100,16 @@ export async function POST(req: Request) {
     await supabase.from("medicine_batches").update({ stock: bu.newStock }).eq("id", bu.id);
   }
 
-  return NextResponse.json({ ...transaction, details: finalDetails }, { status: 201 });
+  // Ambil detail lengkap dengan nama obat untuk struk
+  const { data: fullDetails } = await supabase
+    .from("transaction_details")
+    .select(`qty, price, subtotal, medicine:medicines(name, unit)`)
+    .eq("transaction_id", transaction.id);
+
+  return NextResponse.json({
+    ...transaction,
+    details: fullDetails || finalDetails,
+  }, { status: 201 });
 }
 
 // GET - Ambil riwayat transaksi penjualan

@@ -16,6 +16,7 @@ import {
   LogOut,
   ChevronRight,
   Boxes,
+  CalendarDays,
 } from "lucide-react";
 
 const navItems = [
@@ -23,37 +24,43 @@ const navItems = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["ADMIN", "APOTEKER", "KASIR"],
+    roles: ["ADMIN", "KASIR"],
   },
   {
     label: "Data Obat",
     href: "/dashboard/obat",
     icon: Pill,
-    roles: ["ADMIN", "APOTEKER"],
+    roles: ["ADMIN"],
   },
   {
     label: "Stok & Batch",
     href: "/dashboard/stok",
     icon: Boxes,
-    roles: ["ADMIN", "APOTEKER"],
+    roles: ["ADMIN"],
   },
   {
-    label: "Pembelian",
+    label: "Pembelian / Restok",
     href: "/dashboard/pembelian",
     icon: PackagePlus,
-    roles: ["ADMIN", "APOTEKER"],
+    roles: ["ADMIN"],
   },
   {
     label: "Penjualan (Kasir)",
     href: "/dashboard/penjualan",
     icon: ShoppingCart,
-    roles: ["ADMIN", "APOTEKER", "KASIR"],
+    roles: ["ADMIN", "KASIR"],
+  },
+  {
+    label: "Rekap Harian",
+    href: "/dashboard/rekap-harian",
+    icon: CalendarDays,
+    roles: ["ADMIN"],
   },
   {
     label: "Laporan",
     href: "/dashboard/laporan",
     icon: BarChart3,
-    roles: ["ADMIN", "APOTEKER"],
+    roles: ["ADMIN"],
   },
   {
     label: "Manajemen User",
@@ -101,12 +108,10 @@ export default function Sidebar() {
             className={`text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block ${
               role === "ADMIN"
                 ? "bg-purple-500/20 text-purple-400"
-                : role === "APOTEKER"
-                ? "bg-blue-500/20 text-blue-400"
                 : "bg-emerald-500/20 text-emerald-400"
             }`}
           >
-            {role}
+            {role === "ADMIN" ? "Admin" : "Kasir"}
           </span>
         </div>
       </div>

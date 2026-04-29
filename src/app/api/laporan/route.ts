@@ -42,28 +42,30 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from("transaction_details")
       .select(`medicine_id, qty, medicine:medicines(name, unit)`)
-      .gte("created_at" as string, `${from}T00:00:00`);
+      .gte("created_at", `${from}T00:00:00`);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Aggregate by medicine
-    const grouped = (data || []).reduce((acc: Record<string, { name: string; unit: string; total_qty: number }>, row: {
-      medicine_id: string;
-      qty: number;
-      medicine: { name: string; unit: string } | null;
-    }) => {
-      if (!acc[row.medicine_id]) {
-        acc[row.medicine_id] = {
-          name: row.medicine?.name || "Unknown",
-          unit: row.medicine?.unit || "",
-          total_qty: 0
+    type GroupedItem = { name: string; unit: string; total_qty: number };
+    const grouped: Record<string, GroupedItem> = {};
+
+    for (const row of data || []) {
+      const med = (row.medicine as unknown) as { name: string; unit: string } | null;
+      const key = row.medicine_id;
+      if (!grouped[key]) {
+        grouped[key] = {
+          name: med?.name || "Unknown",
+          unit: med?.unit || "",
+          total_qty: 0,
         };
       }
-      acc[row.medicine_id].total_qty += row.qty;
-      return acc;
-    }, {});
+      grouped[key].total_qty += row.qty;
+    }
 
-    const sorted = Object.values(grouped).sort((a: { total_qty: number }, b: { total_qty: number }) => b.total_qty - a.total_qty).slice(0, 10);
+    const sorted = Object.values(grouped)
+      .sort((a, b) => b.total_qty - a.total_qty)
+      .slice(0, 10);
+
     return NextResponse.json(sorted);
   }
 

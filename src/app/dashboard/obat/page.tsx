@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Plus, Search, Pencil, Trash2, Pill, X, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Pill, X, AlertCircle, CheckCircle, Package } from "lucide-react";
 
 type Medicine = {
   id: string;
@@ -115,181 +115,249 @@ export default function ObatPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-[1200px] w-full mx-auto pb-8 md:pb-0">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${
-          toast.type === "success" ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+        <div className={`fixed top-16 md:top-4 right-4 z-50 px-4 py-2.5 rounded-md text-white text-[13.5px] font-semibold shadow-lg transition-all ${
+          toast.type === "success" ? "bg-[#16a34a]" : "bg-[#dc2626]"
         }`}>
-          {toast.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          {toast.type === "success" ? <CheckCircle className="h-4 w-4 inline mr-1.5" /> : <AlertCircle className="h-4 w-4 inline mr-1.5" />}
           {toast.msg}
         </div>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Data Obat</h1>
-          <p className="text-sm text-zinc-500 mt-1">Kelola semua jenis obat yang tersedia</p>
+          <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Data Obat</h1>
+          <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">Kelola semua jenis obat yang tersedia</p>
         </div>
         {canEdit && (
           <button onClick={openAddModal}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-            <Plus className="h-4 w-4" /> Tambah Obat
+            className="flex items-center justify-center gap-2 bg-[#0f766e] hover:bg-[#0d6963] text-white px-4 py-2 rounded-md text-[13.5px] font-semibold transition-colors shrink-0">
+            <Plus size={16} /> Tambah Obat
           </button>
         )}
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#98a2b3]" />
         <input
           type="text"
           placeholder="Cari nama obat atau barcode..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="w-full pl-9 pr-4 py-2.5 border border-[#d0d5dd] rounded-md text-[13.5px] bg-white focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Nama Obat</th>
-                <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Barcode</th>
-                <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Kategori</th>
-                <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Satuan</th>
-                <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Harga Jual</th>
-                <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Stok</th>
-                <th className="text-center px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Status</th>
-                {canEdit && <th className="text-center px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Aksi</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {loading ? (
-                <tr><td colSpan={8} className="text-center py-12 text-zinc-400">Memuat data...</td></tr>
-              ) : medicines.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-12">
-                    <Pill className="h-10 w-10 text-zinc-300 mx-auto mb-2" />
-                    <p className="text-zinc-400 text-sm">Belum ada data obat</p>
-                  </td>
+      {/* List / Table Area */}
+      {loading ? (
+        <div className="bg-white border border-[#e4e7ec] rounded-lg py-12 text-center text-[#98a2b3] text-[13.5px]">
+          Memuat data obat...
+        </div>
+      ) : medicines.length === 0 ? (
+        <div className="bg-white border border-[#e4e7ec] rounded-lg py-12 text-center flex flex-col items-center">
+          <Pill className="h-10 w-10 text-[#d0d5dd] mb-2" />
+          <p className="text-[#98a2b3] text-[13.5px]">Belum ada data obat</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+            <table className="w-full text-[13px] border-collapse">
+              <thead>
+                <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Barcode</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Kategori</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Satuan</th>
+                  <th className="text-right px-4 py-3 font-semibold text-[#667085]">Harga Jual</th>
+                  <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok</th>
+                  <th className="text-center px-4 py-3 font-semibold text-[#667085]">Status</th>
+                  {canEdit && <th className="text-center px-4 py-3 font-semibold text-[#667085]">Aksi</th>}
                 </tr>
-              ) : medicines.map((m) => (
-                <tr key={m.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">{m.name}</td>
-                  <td className="px-4 py-3 text-zinc-500 font-mono text-xs">{m.barcode}</td>
-                  <td className="px-4 py-3 text-zinc-500">{m.category?.name || "-"}</td>
-                  <td className="px-4 py-3">
-                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs font-medium">
+              </thead>
+              <tbody>
+                {medicines.map((m) => (
+                  <tr key={m.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
+                    <td className="px-4 py-3 font-semibold text-[#101828]">{m.name}</td>
+                    <td className="px-4 py-3 text-[#667085] font-mono text-[12px]">{m.barcode}</td>
+                    <td className="px-4 py-3 text-[#667085]">{m.category?.name || "-"}</td>
+                    <td className="px-4 py-3">
+                      <span className="bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] px-2 py-0.5 rounded-md text-[11px] font-bold">
+                        {m.unit}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-bold text-[#0f766e]">{formatRupiah(m.sell_price)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-[#101828]">{m.total_stock}</td>
+                    <td className="px-4 py-3 text-center">
+                      {m.total_stock <= m.min_stock ? (
+                        <span className="bg-[#fffbeb] text-[#d97706] border border-[#fcd34d] px-2 py-0.5 rounded-md text-[11px] font-bold">
+                          Menipis
+                        </span>
+                      ) : (
+                        <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] px-2 py-0.5 rounded-md text-[11px] font-bold">
+                          Tersedia
+                        </span>
+                      )}
+                    </td>
+                    {canEdit && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => openEditModal(m)} className="p-1.5 rounded-md text-[#667085] hover:text-[#0f766e] hover:bg-[#f0fdf4] transition-colors">
+                            <Pencil size={16} />
+                          </button>
+                          {isAdmin && (
+                            <button onClick={() => handleDelete(m.id, m.name)} className="p-1.5 rounded-md text-[#667085] hover:text-[#dc2626] hover:bg-[#fee2e2] transition-colors">
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col gap-3">
+            {medicines.map((m) => (
+              <div key={m.id} className="bg-white border border-[#e4e7ec] rounded-lg p-4 flex flex-col gap-3 shadow-sm">
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <h3 className="font-bold text-[#101828] text-[15px] leading-tight mb-1">{m.name}</h3>
+                    <div className="text-[12px] font-mono text-[#667085]">{m.barcode}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className="bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] px-2 py-0.5 rounded-md text-[11px] font-bold">
                       {m.unit}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-white">{formatRupiah(m.sell_price)}</td>
-                  <td className="px-4 py-3 text-right font-bold">{m.total_stock}</td>
-                  <td className="px-4 py-3 text-center">
                     {m.total_stock <= m.min_stock ? (
-                      <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full text-xs font-medium">
-                        Menipis
-                      </span>
+                      <span className="bg-[#fffbeb] text-[#d97706] border border-[#fcd34d] px-2 py-0.5 rounded-md text-[11px] font-bold">Menipis</span>
                     ) : (
-                      <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-xs font-medium">
-                        Tersedia
-                      </span>
+                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] px-2 py-0.5 rounded-md text-[11px] font-bold">Tersedia</span>
                     )}
-                  </td>
-                  {canEdit && (
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => openEditModal(m)}
-                          className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        {isAdmin && (
-                          <button onClick={() => handleDelete(m.id, m.name)}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-[13px] bg-[#f8f9fb] p-2.5 rounded-md border border-[#f0f2f5]">
+                  <div>
+                    <span className="text-[#667085] block text-[11px] mb-0.5">Kategori</span>
+                    <span className="font-semibold text-[#344054]">{m.category?.name || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#667085] block text-[11px] mb-0.5">Stok</span>
+                    <span className="font-bold text-[#101828]">{m.total_stock}</span>
+                  </div>
+                  <div className="col-span-2 mt-1">
+                    <span className="text-[#667085] block text-[11px] mb-0.5">Harga Jual</span>
+                    <span className="font-bold text-[#0f766e] text-[14px]">{formatRupiah(m.sell_price)}</span>
+                  </div>
+                </div>
+
+                {canEdit && (
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#f0f2f5] mt-1">
+                    <button onClick={() => openEditModal(m)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 border border-[#d0d5dd] rounded-md text-[#344054] text-[12px] font-semibold hover:bg-gray-50 transition-colors">
+                      <Pencil size={13} /> Edit
+                    </button>
+                    {isAdmin && (
+                      <button onClick={() => handleDelete(m.id, m.name)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 border border-[#fca5a5] bg-[#fee2e2] rounded-md text-[#991b1b] text-[12px] font-semibold hover:bg-[#fecaca] transition-colors">
+                        <Trash2 size={13} /> Hapus
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Modal Tambah/Edit */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-800">
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-[#e4e7ec] bg-[#f8f9fb]">
+              <h2 className="text-[16px] font-bold text-[#101828]">
                 {editItem ? "Edit Obat" : "Tambah Obat Baru"}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                <X className="h-5 w-5" />
+              <button onClick={() => setShowModal(false)} className="p-1 rounded-md hover:bg-gray-200 text-[#667085] transition-colors">
+                <X size={18} />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-5 space-y-4 overflow-y-auto">
               {[
                 { label: "Nama Obat *", key: "name", type: "text", placeholder: "cth. Paracetamol 500mg" },
                 { label: "Kode Barcode *", key: "barcode", type: "text", placeholder: "cth. 8991234567890" },
               ].map(({ label, key, type, placeholder }) => (
                 <div key={key}>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{label}</label>
-                  <input type={type} placeholder={placeholder} value={form[key as keyof typeof form]}
+                  <label className="block text-[13px] font-bold text-[#344054] mb-1.5">{label}</label>
+                  <input type={type} placeholder={placeholder} value={(form as any)[key]}
                     onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                 </div>
               ))}
+              
+              <div>
+                <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Kategori</label>
+                <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] bg-white outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors">
+                  <option value="">-- Pilih Kategori --</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Satuan *</label>
+                  <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Satuan *</label>
                   <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] bg-white outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors">
                     {UNIT_OPTIONS.map(u => <option key={u} value={u}>{u}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Stok Minimum</label>
+                  <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Stok Minimum</label>
                   <input type="number" value={form.min_stock} onChange={(e) => setForm({ ...form, min_stock: e.target.value })}
-                    className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                 </div>
               </div>
+
               {/* Harga hanya bisa diubah Admin */}
               {isAdmin && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Harga Beli (Rp)</label>
+                    <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Harga Beli (Rp)</label>
                     <input type="number" value={form.buy_price} onChange={(e) => setForm({ ...form, buy_price: e.target.value })}
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Harga Jual (Rp)</label>
+                    <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Harga Jual (Rp)</label>
                     <input type="number" value={form.sell_price} onChange={(e) => setForm({ ...form, sell_price: e.target.value })}
-                      className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                      className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
                   </div>
                 </div>
               )}
               {!isAdmin && editItem && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3 rounded-xl text-xs text-yellow-700 dark:text-yellow-400">
-                  ⚠️ Hanya Admin yang boleh mengubah harga obat.
+                <div className="bg-[#fffbeb] border border-[#fcd34d] p-3 rounded-md text-[12px] text-[#92400e] font-medium flex items-center gap-2 mt-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  Hanya Admin yang boleh mengubah harga obat.
                 </div>
               )}
             </div>
-            <div className="px-6 pb-6 flex gap-3">
+            
+            <div className="px-5 py-4 border-t border-[#e4e7ec] flex gap-3 bg-[#f8f9fb]">
               <button onClick={() => setShowModal(false)}
-                className="flex-1 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                className="flex-1 py-2 bg-white border border-[#d0d5dd] rounded-md text-[13.5px] font-semibold text-[#344054] hover:bg-gray-50 transition-colors">
                 Batal
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors">
+                className={`flex-1 py-2 rounded-md text-[13.5px] font-semibold text-white transition-colors ${
+                  saving ? "bg-[#99d6d1] cursor-not-allowed" : "bg-[#0f766e] hover:bg-[#0d6963]"
+                }`}>
                 {saving ? "Menyimpan..." : "Simpan"}
               </button>
             </div>

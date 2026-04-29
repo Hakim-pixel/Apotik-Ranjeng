@@ -79,38 +79,78 @@ export default function PembelianPage() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              <table className="w-full text-[13px] border-collapse">
-                <thead>
-                  <tr className="bg-white border-b border-[#e4e7ec]">
-                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Tanggal Masuk</th>
-                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
-                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
-                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Expired</th>
-                    <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
-                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Supplier</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredHistory.map(h => (
-                    <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
-                      <td className="px-4 py-3 text-[#344054]">
-                        {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-[#101828]">{h.medicine?.name || "-"}</td>
-                      <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085]">{h.batch_number}</td>
-                      <td className="px-4 py-3 text-[#344054]">
-                        {new Date(h.expired_date).toLocaleDateString("id-ID")}
-                      </td>
-                      <td className="px-4 py-3 font-bold text-[#0f766e] text-right">+{h.stock} {h.medicine?.unit}</td>
-                      <td className="px-4 py-3 text-[#667085]">{h.supplier?.name || "-"}</td>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <div className="min-w-[800px]">
+                <table className="w-full text-[13px] border-collapse">
+                  <thead>
+                    <tr className="bg-white border-b border-[#e4e7ec]">
+                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Tanggal Masuk</th>
+                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
+                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
+                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Expired</th>
+                      <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
+                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Supplier</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredHistory.map(h => (
+                      <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
+                        <td className="px-4 py-3 text-[#344054]">
+                          {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-[#101828]">{h.medicine?.name || "-"}</td>
+                        <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085]">{h.batch_number}</td>
+                        <td className="px-4 py-3 text-[#344054]">
+                          {new Date(h.expired_date).toLocaleDateString("id-ID")}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-[#0f766e] text-right">+{h.stock} {h.medicine?.unit}</td>
+                        <td className="px-4 py-3 text-[#667085]">{h.supplier?.name || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden flex flex-col gap-0 border-t border-[#e4e7ec]">
+              {filteredHistory.map(h => (
+                <div key={h.id} className="bg-white p-4 border-b border-[#f0f2f5] flex flex-col gap-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h3 className="font-bold text-[#101828] text-[15px] mb-1 leading-tight">{h.medicine?.name || "-"}</h3>
+                      <div className="text-[12px] font-mono text-[#667085]">{h.batch_number}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="block text-[11px] text-[#667085] mb-0.5">Tanggal Masuk</span>
+                      <span className="font-semibold text-[#344054] text-[13px]">
+                        {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-[13px]">
+                    <div className="bg-[#f0fdf4] border border-[#bbf7d0] p-2 rounded-md">
+                      <span className="block text-[11px] text-[#16a34a] mb-0.5">Stok Masuk</span>
+                      <span className="font-bold text-[#14532d] text-[14px]">+{h.stock} {h.medicine?.unit}</span>
+                    </div>
+                    <div className="bg-[#f8f9fb] border border-[#f0f2f5] p-2 rounded-md">
+                      <span className="block text-[11px] text-[#667085] mb-0.5">Expired</span>
+                      <span className="font-semibold text-[#344054]">
+                        {new Date(h.expired_date).toLocaleDateString("id-ID")}
+                      </span>
+                    </div>
+                    <div className="col-span-2 mt-1">
+                      <span className="block text-[11px] text-[#667085] mb-0.5">Supplier</span>
+                      <span className="font-semibold text-[#344054] text-[13.5px]">{h.supplier?.name || "-"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

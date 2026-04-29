@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Activity } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -32,42 +33,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f0f2f5",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{
-        background: "#fff", border: "1px solid #e4e7ec", borderRadius: 10,
-        padding: "32px 36px", width: 360, boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
-      }}>
+    <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
+      <div className="bg-white border border-[#e4e7ec] rounded-xl p-8 w-full max-w-[380px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{
-            width: 44, height: 44, background: "#0f766e", borderRadius: 10,
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            marginBottom: 12,
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-[#0f766e] rounded-xl inline-flex items-center justify-center mb-4 shadow-sm">
+            <Activity size={24} color="#fff" strokeWidth={2.5} />
           </div>
-          <h1 style={{ fontSize: 17, fontWeight: 700, color: "#101828", margin: 0 }}>Apotek Ranjeng</h1>
-          <p style={{ fontSize: 13, color: "#667085", margin: "4px 0 0" }}>Sistem Inventaris & Kasir</p>
+          <h1 className="text-[20px] font-bold text-[#101828] m-0 leading-tight">Apotek Ranjeng</h1>
+          <p className="text-[14px] text-[#667085] mt-1.5 mb-0 font-medium">Sistem Inventaris & Kasir</p>
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{
-            background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 6,
-            padding: "8px 12px", fontSize: 13, color: "#991b1b", marginBottom: 16,
-          }}>
+          <div className="bg-[#fee2e2] border border-[#fca5a5] rounded-lg p-3 text-[13.5px] text-[#991b1b] mb-5 font-medium flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#344054", marginBottom: 5 }}>
+            <label className="block text-[13px] font-bold text-[#344054] mb-1.5">
               Email
             </label>
             <input
@@ -78,17 +65,11 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@apotik.com"
-              style={{
-                width: "100%", padding: "8px 10px", border: "1px solid #d0d5dd",
-                borderRadius: 6, fontSize: 13, outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={e => (e.target.style.borderColor = "#0f766e")}
-              onBlur={e => (e.target.style.borderColor = "#d0d5dd")}
+              className="w-full px-3.5 py-2.5 border border-[#d0d5dd] rounded-lg text-[14px] outline-none transition-colors focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e]"
             />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#344054", marginBottom: 5 }}>
+            <label className="block text-[13px] font-bold text-[#344054] mb-1.5">
               Password
             </label>
             <input
@@ -98,31 +79,22 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              style={{
-                width: "100%", padding: "8px 10px", border: "1px solid #d0d5dd",
-                borderRadius: 6, fontSize: 13, outline: "none",
-                boxSizing: "border-box",
-              }}
-              onFocus={e => (e.target.style.borderColor = "#0f766e")}
-              onBlur={e => (e.target.style.borderColor = "#d0d5dd")}
+              className="w-full px-3.5 py-2.5 border border-[#d0d5dd] rounded-lg text-[14px] outline-none transition-colors focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e]"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%", padding: "9px", background: loading ? "#99d6d1" : "#0f766e",
-              color: "#fff", border: "none", borderRadius: 6, fontSize: 14,
-              fontWeight: 600, cursor: loading ? "not-allowed" : "pointer",
-              marginTop: 4, transition: "background 0.15s",
-            }}
+            className={`w-full py-2.5 mt-2 rounded-lg text-[14.5px] font-bold text-white transition-all ${
+              loading ? "bg-[#99d6d1] cursor-not-allowed" : "bg-[#0f766e] hover:bg-[#0d6963] shadow-sm hover:shadow active:scale-[0.98]"
+            }`}
           >
-            {loading ? "Memproses..." : "Masuk"}
+            {loading ? "Memproses..." : "Masuk ke Sistem"}
           </button>
         </form>
 
-        <p style={{ textAlign: "center", fontSize: 11, color: "#98a2b3", marginTop: 20, marginBottom: 0 }}>
-          Lupa password? Hubungi administrator sistem.
+        <p className="text-center text-[12.5px] text-[#98a2b3] mt-8 mb-0 font-medium">
+          Hubungi administrator untuk masalah login.
         </p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer } from "lucide-react";
+import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer, ShoppingCart } from "lucide-react";
 
 type Medicine = {
   id: string; name: string; barcode: string;
@@ -34,57 +34,57 @@ function StrukModal({ invoice, bayar, kembalian, onClose }: { invoice: InvoiceDa
   const tgl = new Date(invoice.created_at).toLocaleString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "#fff", borderRadius: 8, width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #e4e7ec", background: "#f0fdf4" }}>
-          <span style={{ fontWeight: 700, color: "#14532d", fontSize: 14 }}>✅ Transaksi Berhasil</span>
-          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}><X size={16} /></button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+      <div className="bg-white rounded-lg w-full max-w-[360px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#e4e7ec] bg-[#f0fdf4] shrink-0">
+          <span className="font-bold text-[#14532d] text-[14px]">✅ Transaksi Berhasil</span>
+          <button onClick={onClose} className="p-1 hover:bg-[#dcfce7] rounded-md transition-colors"><X size={18} color="#14532d" /></button>
         </div>
 
         {/* Struk Preview */}
-        <div style={{ padding: 16, maxHeight: 400, overflowY: "auto" }}>
-          <div ref={printRef}>
-            <div className="c b" style={{ textAlign: "center", fontWeight: "bold", fontFamily: "monospace" }}>APOTEK RANJENG</div>
-            <div className="c" style={{ textAlign: "center", fontSize: 11, color: "#667085", fontFamily: "monospace" }}>Jl. Ranjeng No. 1 | Tel: 0xx-xxxx</div>
-            <div className="hr" style={{ borderTop: "1px dashed #ccc", margin: "8px 0" }}></div>
-            <div className="row" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "monospace", marginBottom: 2 }}>
-              <span>No. Struk</span><span style={{ fontWeight: "bold" }}>{invoice.invoice_number}</span>
+        <div className="p-4 overflow-y-auto flex-1 bg-gray-50">
+          <div ref={printRef} className="bg-white p-4 shadow-sm border border-gray-100 mx-auto w-full max-w-[300px]">
+            <div className="text-center font-bold font-mono">APOTEK RANJENG</div>
+            <div className="text-center text-[11px] text-[#667085] font-mono">Jl. Ranjeng No. 1 | Tel: 0xx-xxxx</div>
+            <div className="border-t border-dashed border-gray-400 my-2"></div>
+            <div className="flex justify-between text-[11px] font-mono mb-0.5">
+              <span>No. Struk</span><span className="font-bold">{invoice.invoice_number}</span>
             </div>
-            <div className="row" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "monospace", marginBottom: 8 }}>
+            <div className="flex justify-between text-[11px] font-mono mb-2">
               <span>Tanggal</span><span>{tgl}</span>
             </div>
-            <div className="hr" style={{ borderTop: "1px dashed #ccc", margin: "8px 0" }}></div>
+            <div className="border-t border-dashed border-gray-400 my-2"></div>
 
             {invoice.details?.map((d, i) => (
-              <div key={i} style={{ marginBottom: 6, fontFamily: "monospace" }}>
-                <div style={{ fontWeight: "bold", fontSize: 12 }}>{d.medicine?.name}</div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+              <div key={i} className="mb-1.5 font-mono">
+                <div className="font-bold text-[12px]">{d.medicine?.name}</div>
+                <div className="flex justify-between text-[11px]">
                   <span>{d.qty} {d.medicine?.unit} × {fmt(d.price)}</span>
-                  <span style={{ fontWeight: "bold" }}>{fmt(d.subtotal)}</span>
+                  <span className="font-bold">{fmt(d.subtotal)}</span>
                 </div>
               </div>
             ))}
 
-            <div className="hr" style={{ borderTop: "1px dashed #ccc", margin: "8px 0" }}></div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: 13, fontFamily: "monospace" }}>
+            <div className="border-t border-dashed border-gray-400 my-2"></div>
+            <div className="flex justify-between font-bold text-[13px] font-mono">
               <span>TOTAL</span><span>{fmt(invoice.total_amount)}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: "monospace", marginTop: 3 }}>
+            <div className="flex justify-between text-[12px] font-mono mt-1">
               <span>Bayar</span><span>{fmt(bayar)}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: "bold", color: "#0f766e", fontFamily: "monospace" }}>
+            <div className="flex justify-between text-[12px] font-bold text-[#0f766e] font-mono">
               <span>Kembalian</span><span>{fmt(kembalian)}</span>
             </div>
-            <div className="hr" style={{ borderTop: "1px dashed #ccc", margin: "8px 0" }}></div>
-            <div style={{ textAlign: "center", fontSize: 11, color: "#98a2b3", fontFamily: "monospace" }}>Terima kasih! Semoga lekas sembuh 🙏</div>
+            <div className="border-t border-dashed border-gray-400 my-2"></div>
+            <div className="text-center text-[11px] text-[#98a2b3] font-mono">Terima kasih! Semoga lekas sembuh 🙏</div>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, padding: "12px 16px", borderTop: "1px solid #e4e7ec" }}>
-          <button onClick={handlePrint} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "#0f766e", color: "#fff", border: "none", borderRadius: 6, padding: "8px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            <Printer size={14} /> Cetak Struk
+        <div className="flex gap-2 px-4 py-3 border-t border-[#e4e7ec] bg-white shrink-0">
+          <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-1.5 bg-[#0f766e] hover:bg-[#0d6963] text-white border-none rounded-md py-2.5 px-3 text-[13px] font-semibold cursor-pointer transition-colors">
+            <Printer size={16} /> Cetak Struk
           </button>
-          <button onClick={onClose} style={{ flex: 1, background: "#fff", border: "1px solid #d0d5dd", borderRadius: 6, padding: "8px", fontSize: 13, fontWeight: 500, cursor: "pointer", color: "#344054" }}>
+          <button onClick={onClose} className="flex-1 bg-white hover:bg-gray-50 border border-[#d0d5dd] rounded-md py-2.5 px-3 text-[13px] font-semibold text-[#344054] cursor-pointer transition-colors">
             Tutup
           </button>
         </div>
@@ -171,15 +171,12 @@ export default function PenjualanPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1100 }}>
+    <div className="max-w-[1200px] w-full mx-auto pb-8 md:pb-0">
       {/* Toast */}
       {toast && (
-        <div style={{
-          position: "fixed", top: 16, right: 16, zIndex: 200,
-          background: toast.type === "ok" ? "#16a34a" : "#dc2626",
-          color: "#fff", padding: "8px 16px", borderRadius: 6, fontSize: 13, fontWeight: 500,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        }}>{toast.msg}</div>
+        <div className={`fixed top-16 md:top-4 right-4 z-50 px-4 py-2.5 rounded-md text-white text-[13.5px] font-semibold shadow-lg transition-all ${toast.type === "ok" ? "bg-[#16a34a]" : "bg-[#dc2626]"}`}>
+          {toast.msg}
+        </div>
       )}
 
       {/* Struk Modal */}
@@ -191,83 +188,78 @@ export default function PenjualanPage() {
       )}
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#101828" }}>Penjualan</h1>
-          <p style={{ fontSize: 12, color: "#667085", margin: "3px 0 0" }}>Stok dipotong otomatis berdasarkan FEFO</p>
-        </div>
+      <div className="mb-4">
+        <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Penjualan</h1>
+        <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">Stok dipotong otomatis berdasarkan FEFO</p>
       </div>
 
       {/* Alert Stok */}
       {lowStock.length > 0 && showAlert && (
-        <div style={{
-          background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 6,
-          padding: "8px 12px", marginBottom: 14, display: "flex", alignItems: "flex-start", gap: 8,
-        }}>
-          <AlertTriangle size={14} color="#d97706" style={{ marginTop: 1, flexShrink: 0 }} />
-          <div style={{ flex: 1, fontSize: 12 }}>
-            <strong style={{ color: "#92400e" }}>{lowStock.length} obat perlu direstok:</strong>{" "}
-            <span style={{ color: "#78350f" }}>
+        <div className="bg-[#fffbeb] border border-[#fcd34d] rounded-md p-3 mb-4 flex items-start gap-2">
+          <AlertTriangle size={16} className="text-[#d97706] mt-0.5 shrink-0" />
+          <div className="flex-1 text-[13px] leading-snug">
+            <strong className="text-[#92400e] block sm:inline">{lowStock.length} obat perlu direstok: </strong>
+            <span className="text-[#78350f]">
               {lowStock.map(i => `${i.name} (sisa ${i.total_stock} ${i.unit})`).join(", ")}
             </span>
           </div>
-          <button onClick={() => setShowAlert(false)} style={{ border: "none", background: "none", cursor: "pointer", padding: 2, color: "#d97706" }}>
-            <X size={13} />
+          <button onClick={() => setShowAlert(false)} className="text-[#d97706] hover:bg-[#fef3c7] p-1 rounded shrink-0 transition-colors">
+            <X size={16} />
           </button>
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 16 }}>
+      {/* Responsive Grid: Stacks on mobile, side-by-side on lg */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        
         {/* Kiri: Cari + Bayar */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {/* Search */}
-          <div style={{ background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ padding: "10px 12px", borderBottom: "1px solid #f0f2f5", display: "flex", alignItems: "center", gap: 8 }}>
-              <Search size={14} color="#98a2b3" />
+        <div className="flex-1 flex flex-col gap-4 min-w-0">
+          {/* Search Area */}
+          <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
+            <div className="px-3 py-2.5 border-b border-[#f0f2f5] flex items-center gap-2">
+              <Search size={16} className="text-[#98a2b3]" />
               <input
                 type="text"
                 placeholder="Cari obat / scan barcode..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 autoFocus
-                style={{
-                  flex: 1, border: "none", outline: "none", fontSize: 13,
-                  color: "#101828", background: "transparent",
-                }}
+                className="flex-1 border-none outline-none text-[14px] text-[#101828] bg-transparent"
               />
-              {loading && <span style={{ fontSize: 11, color: "#98a2b3" }}>Mencari...</span>}
+              {loading && <span className="text-[12px] text-[#98a2b3]">Mencari...</span>}
             </div>
 
             {medicines.length > 0 && (
-              <div style={{ maxHeight: 280, overflowY: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <div className="max-h-[300px] overflow-y-auto overflow-x-auto">
+                <table className="w-full border-collapse text-[13px] min-w-[500px]">
                   <thead>
-                    <tr style={{ background: "#f8f9fb" }}>
-                      {["Nama Obat", "Barcode", "Stok", "Harga", ""].map(h => (
-                        <th key={h} style={{ padding: "6px 12px", textAlign: "left", fontSize: 11, color: "#667085", fontWeight: 600, borderBottom: "1px solid #e4e7ec" }}>{h}</th>
-                      ))}
+                    <tr className="bg-[#f8f9fb]">
+                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Nama Obat</th>
+                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Barcode</th>
+                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Stok</th>
+                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Harga</th>
+                      <th className="py-2 px-3 border-b border-[#e4e7ec]"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {medicines.map(m => (
-                      <tr key={m.id} style={{ borderBottom: "1px solid #f0f2f5", cursor: m.total_stock > 0 ? "pointer" : "not-allowed", opacity: m.total_stock === 0 ? 0.5 : 1 }}
-                        onClick={() => addToCart(m)}
-                        onMouseEnter={e => { if (m.total_stock > 0) (e.currentTarget as HTMLElement).style.background = "#f8f9fb"; }}
-                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ""}>
-                        <td style={{ padding: "8px 12px", fontWeight: 500, fontSize: 13 }}>{m.name}</td>
-                        <td style={{ padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: "#667085" }}>{m.barcode}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12 }}>
-                          <span style={{
-                            fontWeight: 700,
-                            color: m.total_stock === 0 ? "#dc2626" : m.total_stock <= m.min_stock ? "#d97706" : "#16a34a"
-                          }}>
+                      <tr key={m.id} 
+                        className={`border-b border-[#f0f2f5] transition-colors ${m.total_stock > 0 ? 'cursor-pointer hover:bg-[#f8f9fb]' : 'cursor-not-allowed opacity-50'}`}
+                        onClick={() => m.total_stock > 0 && addToCart(m)}
+                      >
+                        <td className="py-2 px-3 font-semibold">{m.name}</td>
+                        <td className="py-2 px-3 font-mono text-[12px] text-[#667085]">{m.barcode}</td>
+                        <td className="py-2 px-3">
+                          <span className={`font-bold ${m.total_stock === 0 ? 'text-[#dc2626]' : m.total_stock <= m.min_stock ? 'text-[#d97706]' : 'text-[#16a34a]'}`}>
                             {m.total_stock} {m.unit}
                             {m.total_stock <= m.min_stock && m.total_stock > 0 && " ⚠️"}
                           </span>
                         </td>
-                        <td style={{ padding: "8px 12px", fontWeight: 600, fontSize: 13, color: "#0f766e" }}>{fmt(m.sell_price)}</td>
-                        <td style={{ padding: "8px 12px" }}>
-                          <span style={{ fontSize: 11, background: "#f0fdf4", color: "#14532d", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>+ Tambah</span>
+                        <td className="py-2 px-3 font-bold text-[#0f766e]">{fmt(m.sell_price)}</td>
+                        <td className="py-2 px-3 text-right">
+                          <span className="text-[12px] bg-[#f0fdf4] text-[#14532d] px-2 py-1 rounded-md font-bold shrink-0 border border-[#bbf7d0]">
+                            + Tambah
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -276,18 +268,23 @@ export default function PenjualanPage() {
               </div>
             )}
             {!search && medicines.length === 0 && (
-              <div style={{ padding: "24px 0", textAlign: "center", color: "#98a2b3", fontSize: 13 }}>
+              <div className="py-8 px-4 text-center text-[#98a2b3] text-[13.5px]">
                 Ketik nama atau scan barcode untuk mencari obat
+              </div>
+            )}
+            {search && !loading && medicines.length === 0 && (
+              <div className="py-8 px-4 text-center text-[#dc2626] text-[13.5px] font-medium">
+                Obat tidak ditemukan.
               </div>
             )}
           </div>
 
-          {/* Pembayaran */}
+          {/* Pembayaran Area */}
           {cart.length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8, padding: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#344054", marginBottom: 10 }}>Pembayaran</div>
-              <div style={{ marginBottom: 8 }}>
-                <label style={{ fontSize: 11, fontWeight: 600, color: "#667085", marginBottom: 4, display: "block" }}>Uang Bayar (Rp)</label>
+            <div className="bg-white border border-[#e4e7ec] rounded-lg p-4 order-last lg:order-none">
+              <div className="text-[14px] font-semibold text-[#344054] mb-3">Pembayaran</div>
+              <div className="mb-3">
+                <label className="text-[12px] font-semibold text-[#667085] mb-1 block">Uang Bayar (Rp)</label>
                 <input
                   type="text"
                   placeholder="0"
@@ -296,28 +293,28 @@ export default function PenjualanPage() {
                     const v = e.target.value.replace(/\D/g, "");
                     setBayar(v ? parseInt(v).toLocaleString("id-ID") : "");
                   }}
-                  style={{ width: "100%", padding: "7px 10px", border: "1px solid #d0d5dd", borderRadius: 6, fontSize: 14, fontFamily: "monospace", fontWeight: 600, outline: "none", boxSizing: "border-box" }}
-                  onFocus={e => e.target.style.borderColor = "#0f766e"}
-                  onBlur={e => e.target.style.borderColor = "#d0d5dd"}
+                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[16px] font-mono font-bold focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
                 />
               </div>
+              
               {/* Nominal cepat */}
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-                {[5000, 10000, 20000, 50000, 100000].map(n => (
-                  <button key={n} onClick={() => setBayar(n.toLocaleString("id-ID"))} style={{ padding: "4px 10px", border: "1px solid #d0d5dd", borderRadius: 4, background: "#f8f9fb", fontSize: 11, cursor: "pointer", fontWeight: 500 }}>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {[10000, 20000, 50000, 100000].map(n => (
+                  <button 
+                    key={n} 
+                    onClick={() => setBayar(n.toLocaleString("id-ID"))} 
+                    className="px-2.5 py-1.5 border border-[#d0d5dd] rounded bg-[#f8f9fb] hover:bg-gray-100 text-[12px] font-semibold text-[#344054] transition-colors"
+                  >
                     {fmt(n)}
                   </button>
                 ))}
+                <button onClick={() => setBayar(total.toLocaleString("id-ID"))} className="px-2.5 py-1.5 border border-[#0f766e] rounded bg-[#f0fdf4] text-[12px] font-bold text-[#0f766e]">Uang Pas</button>
               </div>
+
               {bayarNum > 0 && (
-                <div style={{
-                  display: "flex", justifyContent: "space-between",
-                  padding: "8px 12px", borderRadius: 6, fontSize: 13, fontWeight: 700,
-                  background: kembalian >= 0 ? "#f0fdf4" : "#fee2e2",
-                  color: kembalian >= 0 ? "#14532d" : "#991b1b",
-                }}>
+                <div className={`flex justify-between items-center px-3 py-2.5 rounded-md text-[14px] font-bold ${kembalian >= 0 ? 'bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]' : 'bg-[#fee2e2] text-[#991b1b] border border-[#fca5a5]'}`}>
                   <span>{kembalian >= 0 ? "Kembalian" : "Kurang"}</span>
-                  <span>{fmt(Math.abs(kembalian))}</span>
+                  <span className="text-[16px]">{fmt(Math.abs(kembalian))}</span>
                 </div>
               )}
             </div>
@@ -325,78 +322,87 @@ export default function PenjualanPage() {
         </div>
 
         {/* Kanan: Keranjang */}
-        <div style={{ background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8, display: "flex", flexDirection: "column", height: "fit-content" }}>
-          <div style={{ padding: "10px 14px", borderBottom: "1px solid #f0f2f5", display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#344054" }}>Keranjang</span>
-            {cart.length > 0 && (
-              <span style={{ marginLeft: "auto", background: "#0f766e", color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 600 }}>{cart.length}</span>
-            )}
-          </div>
-
-          <div style={{ flex: 1, maxHeight: 320, overflowY: "auto" }}>
-            {cart.length === 0 ? (
-              <div style={{ padding: "32px 0", textAlign: "center", color: "#98a2b3", fontSize: 13 }}>
-                Keranjang kosong
-              </div>
-            ) : cart.map(item => (
-              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderBottom: "1px solid #f0f2f5" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#101828", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</div>
-                  <div style={{ fontSize: 11, color: "#667085" }}>{fmt(item.sell_price)}/{item.unit}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <button onClick={() => updateQty(item.id, -1)} style={{ width: 22, height: 22, border: "1px solid #d0d5dd", borderRadius: 4, background: "#f8f9fb", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Minus size={11} />
-                  </button>
-                  <span style={{ width: 24, textAlign: "center", fontSize: 13, fontWeight: 700 }}>{item.qty}</span>
-                  <button onClick={() => updateQty(item.id, 1)} style={{ width: 22, height: 22, border: "1px solid #d0d5dd", borderRadius: 4, background: "#f8f9fb", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Plus size={11} />
-                  </button>
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#0f766e", minWidth: 70, textAlign: "right" }}>{fmt(item.sell_price * item.qty)}</span>
-                <button onClick={() => setCart(p => p.filter(c => c.id !== item.id))} style={{ border: "none", background: "none", cursor: "pointer", color: "#dc2626", padding: 2 }}>
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ padding: "12px 14px", borderTop: "1px solid #e4e7ec" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "#667085" }}>Total</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: "#101828" }}>{fmt(total)}</span>
+        <div className="w-full lg:w-[380px] shrink-0">
+          <div className="bg-white border border-[#e4e7ec] rounded-lg flex flex-col h-[400px] lg:h-[calc(100vh-140px)] sticky top-16">
+            <div className="px-4 py-3 border-b border-[#f0f2f5] flex items-center justify-between bg-[#f8f9fb] rounded-t-lg">
+              <span className="text-[14px] font-bold text-[#344054]">Keranjang</span>
+              {cart.length > 0 && (
+                <span className="bg-[#0f766e] text-white px-2 py-0.5 rounded-full text-[11px] font-bold">
+                  {cart.length} Item
+                </span>
+              )}
             </div>
-            <button
-              onClick={handleCheckout}
-              disabled={processing || cart.length === 0 || (bayarNum > 0 && kembalian < 0)}
-              style={{
-                width: "100%", padding: "9px", background: processing || cart.length === 0 ? "#99d6d1" : "#0f766e",
-                color: "#fff", border: "none", borderRadius: 6, fontSize: 14, fontWeight: 700,
-                cursor: processing || cart.length === 0 ? "not-allowed" : "pointer",
-              }}
-            >
-              {processing ? "Memproses..." : `Bayar ${fmt(total)}`}
-            </button>
+
+            <div className="flex-1 overflow-y-auto">
+              {cart.length === 0 ? (
+                <div className="py-12 px-4 text-center text-[#98a2b3] text-[13.5px] flex flex-col items-center gap-2">
+                  <ShoppingCart size={32} className="opacity-30" />
+                  Belum ada obat di keranjang
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center gap-2.5 p-3 border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] font-bold text-[#101828] truncate">{item.name}</div>
+                        <div className="text-[12px] text-[#667085]">{fmt(item.sell_price)}/{item.unit}</div>
+                      </div>
+                      
+                      {/* Qty Controls */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 flex items-center justify-center border border-[#d0d5dd] rounded bg-white hover:bg-gray-50 text-[#344054] transition-colors">
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-6 text-center text-[14px] font-bold text-[#101828]">{item.qty}</span>
+                        <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 flex items-center justify-center border border-[#d0d5dd] rounded bg-white hover:bg-gray-50 text-[#344054] transition-colors">
+                          <Plus size={14} />
+                        </button>
+                      </div>
+
+                      <div className="text-[13.5px] font-bold text-[#0f766e] w-[80px] text-right shrink-0">
+                        {fmt(item.sell_price * item.qty)}
+                      </div>
+                      
+                      <button onClick={() => setCart(p => p.filter(c => c.id !== item.id))} className="text-[#98a2b3] hover:text-[#dc2626] p-1 transition-colors shrink-0">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[#e4e7ec] bg-white rounded-b-lg shrink-0">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-[14px] text-[#667085] font-semibold">Total Tagihan</span>
+                <span className="text-[18px] font-bold text-[#101828]">{fmt(total)}</span>
+              </div>
+              <button
+                onClick={handleCheckout}
+                disabled={processing || cart.length === 0 || (bayarNum > 0 && kembalian < 0)}
+                className={`w-full py-2.5 rounded-md text-[14px] font-bold text-white transition-colors flex justify-center items-center gap-2 ${
+                  processing || cart.length === 0 ? "bg-[#99d6d1] cursor-not-allowed" : "bg-[#0f766e] hover:bg-[#0d6963] shadow-sm"
+                }`}
+              >
+                {processing ? "Memproses..." : "Selesaikan Transaksi"}
+              </button>
+            </div>
           </div>
         </div>
+
       </div>
 
       {/* Info stok tersisa */}
       {cart.length > 0 && (
-        <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="mt-4 flex gap-2 flex-wrap pb-10 md:pb-0">
           {cart.map(item => {
             const sisaSetelah = item.total_stock - item.qty;
+            const isLow = sisaSetelah <= item.min_stock;
             return (
-              <span key={item.id} style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                background: sisaSetelah <= item.min_stock ? "#fffbeb" : "#f0fdf4",
-                border: `1px solid ${sisaSetelah <= item.min_stock ? "#fcd34d" : "#bbf7d0"}`,
-                color: sisaSetelah <= item.min_stock ? "#92400e" : "#14532d",
-                padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 500,
-              }}>
-                <Package size={10} />
-                {item.name}: sisa {sisaSetelah} {item.unit} setelah transaksi
-                {sisaSetelah <= item.min_stock && " ⚠️"}
+              <span key={item.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isLow ? 'bg-[#fffbeb] border-[#fcd34d] text-[#92400e]' : 'bg-[#f0fdf4] border-[#bbf7d0] text-[#14532d]'}`}>
+                <Package size={12} />
+                {item.name}: sisa {sisaSetelah} {item.unit}
+                {isLow && " ⚠️"}
               </span>
             );
           })}

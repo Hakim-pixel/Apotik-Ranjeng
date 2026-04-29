@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Pill,
@@ -16,6 +17,8 @@ import {
   CalendarDays,
   ChevronRight,
   Activity,
+  Menu,
+  X
 } from "lucide-react";
 
 const navItems = [
@@ -34,101 +37,107 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role || "KASIR";
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Auto close sidebar on mobile when route changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   const filteredNav = navItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside style={{
-      position: "fixed", inset: "0 auto 0 0", width: "220px",
-      background: "#1a1f2e", display: "flex", flexDirection: "column",
-      borderRight: "1px solid #2d3348", zIndex: 50,
-    }}>
-      {/* Logo */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: "10px",
-        padding: "16px 16px 14px", borderBottom: "1px solid #2d3348",
-      }}>
-        <div style={{ background: "#0f766e", padding: "6px", borderRadius: "6px", display: "flex" }}>
-          <Activity size={16} color="#fff" />
-        </div>
-        <div>
-          <div style={{ color: "#fff", fontWeight: 700, fontSize: "13px", lineHeight: 1.2 }}>Apotek Ranjeng</div>
-          <div style={{ color: "#6b7fa3", fontSize: "11px" }}>Sistem Inventaris</div>
-        </div>
-      </div>
-
-      {/* User badge */}
-      <div style={{ padding: "10px 12px", borderBottom: "1px solid #2d3348" }}>
-        <div style={{
-          background: "#252b3b", borderRadius: "6px", padding: "8px 10px",
-          display: "flex", alignItems: "center", gap: "8px",
-        }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: "50%",
-            background: role === "ADMIN" ? "#7c3aed" : "#0f766e",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontWeight: 700, fontSize: "12px", flexShrink: 0,
-          }}>
-            {(session?.user?.name || "U").charAt(0).toUpperCase()}
+    <>
+      {/* Mobile Top Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#e4e7ec] flex items-center justify-between px-4 z-40 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-[#0f766e] p-1.5 rounded-md flex">
+            <Activity size={16} color="#fff" />
           </div>
-          <div style={{ overflow: "hidden" }}>
-            <div style={{ color: "#fff", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {session?.user?.name || "User"}
-            </div>
-            <div style={{
-              fontSize: "10px", fontWeight: 600,
-              color: role === "ADMIN" ? "#a78bfa" : "#34d399",
-            }}>
-              {role === "ADMIN" ? "ADMIN" : "KASIR"}
-            </div>
-          </div>
+          <span className="font-bold text-[#101828] text-[14px]">Apotek Ranjeng</span>
         </div>
-      </div>
-
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: "8px 8px", overflowY: "auto" }}>
-        {filteredNav.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
-          return (
-            <Link key={item.href} href={item.href} style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              padding: "7px 10px", borderRadius: "6px", marginBottom: "1px",
-              textDecoration: "none", fontSize: "13px", fontWeight: isActive ? 600 : 400,
-              color: isActive ? "#fff" : "#8892aa",
-              background: isActive ? "#0f766e" : "transparent",
-              transition: "all 0.1s",
-            }}
-              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = "#252b3b"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
-              onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#8892aa"; } }}
-            >
-              <Icon size={14} style={{ flexShrink: 0 }} />
-              <span style={{ flex: 1 }}>{item.label}</span>
-              {isActive && <ChevronRight size={12} style={{ opacity: 0.7 }} />}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Logout */}
-      <div style={{ padding: "8px", borderTop: "1px solid #2d3348" }}>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", gap: "8px",
-            padding: "7px 10px", borderRadius: "6px", border: "none",
-            background: "transparent", color: "#f87171", cursor: "pointer",
-            fontSize: "13px", fontWeight: 500,
-          }}
-          onMouseEnter={e => (e.currentTarget.style.background = "#2d1f1f")}
-          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-        >
-          <LogOut size={14} />
-          <span>Keluar</span>
+        <button onClick={() => setIsOpen(true)} className="p-1.5 text-[#475467] hover:bg-gray-100 rounded-md">
+          <Menu size={20} />
         </button>
       </div>
-    </aside>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/50 z-50 transition-opacity" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside 
+        className={`fixed inset-y-0 left-0 w-[240px] md:w-[220px] bg-[#1a1f2e] border-r border-[#2d3348] flex flex-col z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        {/* Logo Area */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-[#2d3348]">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-[#0f766e] p-1.5 rounded-md flex">
+              <Activity size={16} color="#fff" />
+            </div>
+            <div>
+              <div className="text-white font-bold text-[13px] leading-tight">Apotek Ranjeng</div>
+              <div className="text-[#6b7fa3] text-[11px]">Sistem Inventaris</div>
+            </div>
+          </div>
+          <button className="md:hidden text-[#6b7fa3] p-1 hover:text-white" onClick={() => setIsOpen(false)}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* User badge */}
+        <div className="p-3 border-b border-[#2d3348]">
+          <div className="bg-[#252b3b] rounded-md p-2.5 flex items-center gap-2.5">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-[13px] shrink-0 ${role === "ADMIN" ? "bg-[#7c3aed]" : "bg-[#0f766e]"}`}>
+              {(session?.user?.name || "U").charAt(0).toUpperCase()}
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-white text-[13px] font-semibold truncate">
+                {session?.user?.name || "User"}
+              </div>
+              <div className={`text-[10px] font-bold ${role === "ADMIN" ? "text-[#a78bfa]" : "text-[#34d399]"}`}>
+                {role === "ADMIN" ? "ADMIN" : "KASIR"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Nav Links */}
+        <nav className="flex-1 p-2.5 overflow-y-auto space-y-0.5">
+          {filteredNav.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href} 
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] transition-colors ${isActive ? "bg-[#0f766e] text-white font-semibold" : "text-[#8892aa] hover:bg-[#252b3b] hover:text-white"}`}
+              >
+                <Icon size={16} className="shrink-0" />
+                <span className="flex-1">{item.label}</span>
+                {isActive && <ChevronRight size={14} className="opacity-70" />}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Logout */}
+        <div className="p-2.5 border-t border-[#2d3348]">
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[#f87171] hover:bg-[#2d1f1f] transition-colors text-[13px] font-medium"
+          >
+            <LogOut size={16} />
+            <span>Keluar</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

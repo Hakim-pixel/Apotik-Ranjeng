@@ -49,12 +49,9 @@ async function getStats(role: string) {
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div style={{
-      background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8,
-      padding: "14px 18px", borderLeft: `3px solid ${color}`,
-    }}>
-      <div style={{ fontSize: 11, color: "#98a2b3", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: "#101828" }}>{value}</div>
+    <div className="bg-white border border-[#e4e7ec] rounded-lg py-3.5 px-4" style={{ borderLeft: `4px solid ${color}` }}>
+      <div className="text-[11px] text-[#98a2b3] font-semibold uppercase tracking-wider mb-1.5">{label}</div>
+      <div className="text-[22px] font-bold text-[#101828] truncate">{value}</div>
     </div>
   );
 }
@@ -65,20 +62,20 @@ export default async function DashboardPage() {
   const stats = await getStats(role);
 
   return (
-    <div style={{ maxWidth: 1100 }}>
+    <div className="max-w-[1100px] w-full mx-auto">
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: "#101828", margin: 0 }}>Dashboard</h1>
-        <p style={{ fontSize: 13, color: "#667085", margin: "4px 0 0" }}>
+      <div className="mb-5">
+        <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Dashboard</h1>
+        <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">
           Selamat datang, <strong>{session?.user?.name}</strong> —
-          login sebagai <span style={{ color: role === "ADMIN" ? "#7c3aed" : "#0f766e", fontWeight: 600 }}>
+          login sebagai <span className={`font-semibold ${role === "ADMIN" ? "text-[#7c3aed]" : "text-[#0f766e]"}`}>
             {role === "ADMIN" ? "Admin" : "Kasir"}
           </span>
         </p>
       </div>
 
       {/* Stat Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <StatCard label="Pendapatan Hari Ini" value={`Rp ${stats.totalPenjualanHari.toLocaleString("id-ID")}`} color="#0f766e" />
         <StatCard label="Transaksi Hari Ini" value={stats.totalTransaksiHari} color="#2563eb" />
         <StatCard label="Stok Menipis" value={stats.stokMenipis.length} color="#d97706" />
@@ -88,43 +85,27 @@ export default async function DashboardPage() {
         }
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Aksi Cepat */}
-        <div style={{ background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8, padding: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#344054", marginBottom: 12 }}>Aksi Cepat</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <Link href="/dashboard/penjualan" style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
-              background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6,
-              textDecoration: "none", color: "#14532d", fontWeight: 500, fontSize: 13,
-            }}>
-              <ShoppingCart size={15} color="#0f766e" />
+        <div className="bg-white border border-[#e4e7ec] rounded-lg p-4">
+          <div className="text-[14px] font-semibold text-[#344054] mb-3">Aksi Cepat</div>
+          <div className="flex flex-col gap-2">
+            <Link href="/dashboard/penjualan" className="flex items-center gap-3 px-3 py-2.5 bg-[#f0fdf4] border border-[#bbf7d0] rounded-md text-[#14532d] font-medium text-[13.5px] transition-colors hover:bg-[#dcfce7]">
+              <ShoppingCart size={16} color="#0f766e" />
               Transaksi Baru (Penjualan)
             </Link>
             {role === "ADMIN" && (
               <>
-                <Link href="/dashboard/obat" style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
-                  background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6,
-                  textDecoration: "none", color: "#1e3a8a", fontWeight: 500, fontSize: 13,
-                }}>
-                  <Pill size={15} color="#2563eb" />
+                <Link href="/dashboard/obat" className="flex items-center gap-3 px-3 py-2.5 bg-[#eff6ff] border border-[#bfdbfe] rounded-md text-[#1e3a8a] font-medium text-[13.5px] transition-colors hover:bg-[#dbeafe]">
+                  <Pill size={16} color="#2563eb" />
                   Kelola Data Obat
                 </Link>
-                <Link href="/dashboard/pembelian" style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
-                  background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 6,
-                  textDecoration: "none", color: "#581c87", fontWeight: 500, fontSize: 13,
-                }}>
-                  <PackageCheck size={15} color="#7c3aed" />
+                <Link href="/dashboard/pembelian" className="flex items-center gap-3 px-3 py-2.5 bg-[#faf5ff] border border-[#e9d5ff] rounded-md text-[#581c87] font-medium text-[13.5px] transition-colors hover:bg-[#f3e8ff]">
+                  <PackageCheck size={16} color="#7c3aed" />
                   Pembelian / Restok
                 </Link>
-                <Link href="/dashboard/rekap-harian" style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
-                  background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 6,
-                  textDecoration: "none", color: "#7c2d12", fontWeight: 500, fontSize: 13,
-                }}>
-                  <CalendarDays size={15} color="#d97706" />
+                <Link href="/dashboard/rekap-harian" className="flex items-center gap-3 px-3 py-2.5 bg-[#fff7ed] border border-[#fed7aa] rounded-md text-[#7c2d12] font-medium text-[13.5px] transition-colors hover:bg-[#ffedd5]">
+                  <CalendarDays size={16} color="#d97706" />
                   Rekap Harian
                 </Link>
               </>
@@ -133,46 +114,48 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stok Menipis */}
-        <div style={{ background: "#fff", border: "1px solid #e4e7ec", borderRadius: 8, padding: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <AlertTriangle size={14} color="#d97706" />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#344054" }}>
+        <div className="bg-white border border-[#e4e7ec] rounded-lg p-4 flex flex-col h-[280px]">
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <AlertTriangle size={16} color="#d97706" />
+            <span className="text-[14px] font-semibold text-[#344054]">
               Stok Perlu Direstok ({stats.stokMenipis.length})
             </span>
           </div>
           {stats.stokMenipis.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: "#98a2b3", fontSize: 13 }}>
+            <div className="text-center py-10 text-[#98a2b3] text-[13.5px] m-auto">
               ✅ Semua stok aman
             </div>
           ) : (
-            <div style={{ maxHeight: 180, overflowY: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                <thead>
-                  <tr style={{ background: "#f8f9fb" }}>
-                    <th style={{ padding: "6px 8px", textAlign: "left", color: "#667085", fontWeight: 600, borderBottom: "1px solid #e4e7ec" }}>Nama Obat</th>
-                    <th style={{ padding: "6px 8px", textAlign: "right", color: "#667085", fontWeight: 600, borderBottom: "1px solid #e4e7ec" }}>Sisa</th>
-                    <th style={{ padding: "6px 8px", textAlign: "right", color: "#667085", fontWeight: 600, borderBottom: "1px solid #e4e7ec" }}>Min</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.stokMenipis.map((item) => (
-                    <tr key={item.id} style={{ borderBottom: "1px solid #f0f2f5" }}>
-                      <td style={{ padding: "6px 8px", color: "#101828" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <Package size={11} color="#d97706" />
-                          {item.name}
-                        </div>
-                      </td>
-                      <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: 700, color: item.total_stock === 0 ? "#dc2626" : "#d97706" }}>
-                        {item.total_stock} {item.unit}
-                      </td>
-                      <td style={{ padding: "6px 8px", textAlign: "right", color: "#98a2b3" }}>
-                        {item.min_stock}
-                      </td>
+            <div className="overflow-x-auto flex-1 h-full">
+              <div className="min-w-[300px]">
+                <table className="w-full border-collapse text-[12.5px]">
+                  <thead>
+                    <tr className="bg-[#f8f9fb]">
+                      <th className="py-2 px-2.5 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Nama Obat</th>
+                      <th className="py-2 px-2.5 text-right text-[#667085] font-semibold border-b border-[#e4e7ec]">Sisa</th>
+                      <th className="py-2 px-2.5 text-right text-[#667085] font-semibold border-b border-[#e4e7ec] hidden sm:table-cell">Min</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {stats.stokMenipis.map((item) => (
+                      <tr key={item.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb]">
+                        <td className="py-2 px-2.5 text-[#101828]">
+                          <div className="flex items-center gap-1.5 font-medium">
+                            <Package size={12} color="#d97706" className="shrink-0" />
+                            {item.name}
+                          </div>
+                        </td>
+                        <td className={`py-2 px-2.5 text-right font-bold whitespace-nowrap ${item.total_stock === 0 ? 'text-[#dc2626]' : 'text-[#d97706]'}`}>
+                          {item.total_stock} {item.unit}
+                        </td>
+                        <td className="py-2 px-2.5 text-right text-[#98a2b3] hidden sm:table-cell">
+                          {item.min_stock}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

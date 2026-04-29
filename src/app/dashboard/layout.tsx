@@ -14,24 +14,19 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f0f2f5" }}>
+    <div className="flex min-h-screen bg-[#f0f2f5]">
       <Sidebar />
-      <div style={{ marginLeft: "220px", flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Top bar */}
-        <header style={{
-          background: "#fff", borderBottom: "1px solid #e4e7ec",
-          padding: "0 20px", height: "44px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          position: "sticky", top: 0, zIndex: 10,
-        }}>
-          <div style={{ fontSize: "13px", color: "#475467" }}>
-            Sistem Inventaris &amp; Kasir Apotek Ranjeng
+      <div className="flex-1 flex flex-col md:ml-[220px] pt-14 md:pt-0 w-full min-w-0">
+        {/* Top bar Desktop only */}
+        <header className="hidden md:flex bg-white border-b border-[#e4e7ec] px-6 h-14 items-center justify-between sticky top-0 z-10 shrink-0">
+          <div className="text-[13.5px] text-[#475467] font-medium">
+            Sistem Inventaris & Kasir Apotek Ranjeng
           </div>
-          <div style={{ fontSize: "12px", color: "#98a2b3" }}>
+          <div className="text-[12.5px] text-[#98a2b3]">
             {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </div>
         </header>
-        <main style={{ flex: 1, padding: "20px 24px" }}>
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
           {children}
         </main>
       </div>

@@ -18,13 +18,15 @@ import {
   ChevronRight,
   Activity,
   Menu,
-  X
+  X,
+  Truck
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "KASIR"] },
   { label: "Data Obat", href: "/dashboard/obat", icon: Pill, roles: ["ADMIN"] },
   { label: "Stok & Batch", href: "/dashboard/stok", icon: Boxes, roles: ["ADMIN"] },
+  { label: "Data Supplier", href: "/dashboard/supplier", icon: Truck, roles: ["ADMIN"] },
   { label: "Pembelian", href: "/dashboard/pembelian", icon: PackagePlus, roles: ["ADMIN"] },
   { label: "Penjualan", href: "/dashboard/penjualan", icon: ShoppingCart, roles: ["ADMIN", "KASIR"] },
   { label: "Rekap Harian", href: "/dashboard/rekap-harian", icon: CalendarDays, roles: ["ADMIN"] },

@@ -17,18 +17,28 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    if (res?.error) {
-      setError("Email atau password salah. Periksa kembali.");
+      if (res?.error) {
+        setError("Email atau password salah. Periksa kembali.");
+        setLoading(false);
+      } else if (res?.ok) {
+        router.push("/dashboard");
+        router.refresh();
+        // Jangan set loading(false) di sini agar tombol tetap "Memproses..." saat redirect
+      } else {
+        setError("Terjadi kesalahan tidak terduga dari server.");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      setError("Gagal menghubungi server. Pastikan NEXTAUTH_URL di Vercel sudah benar.");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   };
 

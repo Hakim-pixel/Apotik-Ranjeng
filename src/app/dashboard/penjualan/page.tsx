@@ -123,6 +123,7 @@ export default function PenjualanPage() {
   const [diskon, setDiskon] = useState("");
   const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [showAlert, setShowAlert] = useState(true);
+  const [lastPayment, setLastPayment] = useState({ bayar: 0, kembalian: 0 });
 
   const showToast = (type: "ok" | "err", msg: string) => {
     setToast({ type, msg });
@@ -190,7 +191,13 @@ export default function PenjualanPage() {
     const data = await res.json();
     setProcessing(false);
     if (!res.ok) { showToast("err", data.error || "Transaksi gagal."); return; }
-    setInvoice(data); setCart([]); setBayar(""); setDiskon("");
+    
+    // Simpan data bayar ke state agar tidak hilang di modal
+    setLastPayment({ bayar: bayarNum, kembalian: kembalian < 0 ? 0 : kembalian });
+    setInvoice(data); 
+    
+    // Reset form
+    setCart([]); setBayar(""); setDiskon("");
     fetch("/api/restock-alert").then(r => r.json()).then(d => { if (Array.isArray(d)) setLowStock(d); });
   };
 
@@ -206,7 +213,7 @@ export default function PenjualanPage() {
       {/* Struk Modal */}
       {invoice && (
         <StrukModal
-          invoice={invoice} bayar={bayarNum} kembalian={kembalian < 0 ? 0 : kembalian}
+          invoice={invoice} bayar={lastPayment.bayar} kembalian={lastPayment.kembalian}
           onClose={() => setInvoice(null)}
         />
       )}

@@ -159,7 +159,7 @@ export default function StokPage() {
                           {/* Indikator warning/expired di mobile */}
                           {(isExpired || isWarn) && (
                             <span className="block sm:hidden text-[11px] mt-0.5 font-bold text-red-600">
-                              {isExpired ? "Expired" : "⚠️ Segera Habis"}
+                              {isExpired ? "Expired" : "⚠️ Hampir Expired"}
                             </span>
                           )}
                         </td>
@@ -180,7 +180,7 @@ export default function StokPage() {
                           {isExpired ? (
                             <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
                           ) : isWarn ? (
-                            <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
+                            <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Hampir Expired</span>
                           ) : (
                             <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
                           )}

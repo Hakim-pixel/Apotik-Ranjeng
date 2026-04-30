@@ -330,16 +330,32 @@ export default function PenjualanPage() {
               
               {/* Nominal cepat */}
               <div className="flex flex-wrap gap-2 mb-3">
-                {[10000, 20000, 50000, 100000].map(n => (
-                  <button 
-                    key={n} 
-                    onClick={() => setBayar(n.toLocaleString("id-ID"))} 
-                    className="px-2.5 py-1.5 border border-[#d0d5dd] rounded bg-[#f8f9fb] hover:bg-gray-100 text-[12px] font-semibold text-[#344054] transition-colors"
-                  >
-                    {fmt(n)}
-                  </button>
-                ))}
-                <button onClick={() => setBayar(totalTagihan.toLocaleString("id-ID"))} className="px-2.5 py-1.5 border border-[#0f766e] rounded bg-[#f0fdf4] text-[12px] font-bold text-[#0f766e]">Uang Pas</button>
+                {[10000, 20000, 50000, 100000].map(n => {
+                  const isActive = bayarNum === n;
+                  return (
+                    <button 
+                      key={n} 
+                      onClick={() => setBayar(n.toLocaleString("id-ID"))} 
+                      className={`px-2.5 py-1.5 border rounded text-[12px] font-semibold transition-colors ${
+                        isActive 
+                          ? "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] shadow-sm" 
+                          : "border-[#d0d5dd] bg-[#f8f9fb] text-[#344054] hover:bg-gray-100"
+                      }`}
+                    >
+                      {fmt(n)}
+                    </button>
+                  );
+                })}
+                <button 
+                  onClick={() => setBayar(totalTagihan.toLocaleString("id-ID"))} 
+                  className={`px-2.5 py-1.5 border rounded text-[12px] font-bold transition-colors ${
+                    bayarNum === totalTagihan && totalTagihan > 0
+                      ? "border-[#0f766e] bg-[#0f766e] text-white shadow-sm"
+                      : "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] hover:bg-[#e6fbf0]"
+                  }`}
+                >
+                  Uang Pas
+                </button>
               </div>
 
               {bayarNum > 0 && (

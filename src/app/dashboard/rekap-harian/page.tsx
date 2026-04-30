@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import * as XLSX from "xlsx";
 import {
   CalendarDays,
   ShoppingCart,
@@ -9,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   Receipt,
+  Download,
 } from "lucide-react";
 
 type TransactionDetail = {
@@ -77,6 +79,37 @@ export default function RekapHarianPage() {
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  const handleExportExcel = () => {
+    if (!data || data.transactions.length === 0) return;
+
+    const rows: any[] = [];
+    
+    data.transactions.forEach(tx => {
+      const originalTotal = tx.transaction_details.reduce((sum, d) => sum + d.subtotal, 0);
+      const discount = originalTotal - tx.total_amount;
+      
+      tx.transaction_details.forEach((d, index) => {
+        rows.push({
+          "No. Invoice": tx.invoice_number,
+          "Tanggal": formatTanggal(tx.created_at),
+          "Waktu": formatWaktu(tx.created_at),
+          "Kasir": tx.user?.name || "-",
+          "Nama Obat": d.medicine?.name || "-",
+          "Harga Satuan (Rp)": d.price,
+          "Qty": d.qty,
+          "Subtotal Obat (Rp)": d.subtotal,
+          "Diskon Transaksi (Rp)": index === 0 ? discount : 0,
+          "Total Akhir Transaksi (Rp)": index === 0 ? tx.total_amount : 0,
+        });
+      });
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Penjualan");
+    XLSX.writeFile(workbook, `Rekap_Apotek_${date}.xlsx`);
+  };
+
   const avgPerTransaksi =
     data && data.totalTransaksi > 0
       ? data.totalPendapatan / data.totalTransaksi
@@ -96,15 +129,25 @@ export default function RekapHarianPage() {
             {date && formatTanggal(date + "T00:00:00")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Pilih Tanggal:</label>
-          <input
-            type="date"
-            value={date}
-            max={today}
-            onChange={(e) => setDate(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Pilih Tanggal:</label>
+            <input
+              type="date"
+              value={date}
+              max={today}
+              onChange={(e) => setDate(e.target.value)}
+              className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <button
+            onClick={handleExportExcel}
+            disabled={!data || data.transactions.length === 0}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="h-4 w-4" />
+            Export Excel
+          </button>
         </div>
       </div>
 

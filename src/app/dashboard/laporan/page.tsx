@@ -137,9 +137,10 @@ export default function LaporanPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                    {["Invoice", "Tanggal", "Kasir", "Total"].map(h => (
-                      <th key={h} className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">{h}</th>
-                    ))}
+                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Invoice</th>
+                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Tanggal</th>
+                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden md:table-cell">Kasir</th>
+                    <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -147,10 +148,10 @@ export default function LaporanPage() {
                     <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
                   ) : sales.map(s => (
                     <tr key={s.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 dark:text-white">{s.invoice_number}</td>
-                      <td className="px-4 py-3 text-zinc-500 text-xs">{new Date(s.created_at).toLocaleString("id-ID")}</td>
-                      <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">{s.user?.name || "-"}</td>
-                      <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">{formatRupiah(s.total_amount)}</td>
+                      <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">{s.invoice_number}</td>
+                      <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">{new Date(s.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                      <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 hidden md:table-cell whitespace-nowrap">{s.user?.name || "-"}</td>
+                      <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">{formatRupiah(s.total_amount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -164,9 +165,11 @@ export default function LaporanPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                  {["Nama Obat", "Barcode", "No. Batch", "Expired", "Sisa Stok"].map(h => (
-                    <th key={h} className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">{h}</th>
-                  ))}
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Nama Obat</th>
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden md:table-cell">Barcode</th>
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden sm:table-cell">No. Batch</th>
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Expired</th>
+                  <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Sisa Stok</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -177,18 +180,22 @@ export default function LaporanPage() {
                   const daysLeft = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                   return (
                     <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">{b.medicine?.name || "-"}</td>
-                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs">{b.medicine?.barcode || "-"}</td>
-                      <td className="px-4 py-3 font-mono text-xs">{b.batch_number}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white whitespace-nowrap">
+                        {b.medicine?.name || "-"}
+                        <span className="block sm:hidden text-[11px] font-mono text-zinc-500 mt-0.5">{b.batch_number}</span>
+                      </td>
+                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs hidden md:table-cell whitespace-nowrap">{b.medicine?.barcode || "-"}</td>
+                      <td className="px-4 py-3 font-mono text-xs hidden sm:table-cell whitespace-nowrap">{b.batch_number}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium ${
                           daysLeft <= 30 ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" :
                           "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
                         }`}>
-                          {expDate.toLocaleDateString("id-ID")} ({daysLeft} hari lagi)
+                          {expDate.toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' })} 
+                          <span className="hidden sm:inline"> ({daysLeft} hari lagi)</span>
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-bold text-zinc-900 dark:text-white">{b.stock} {b.medicine?.unit}</td>
+                      <td className="px-4 py-3 font-bold text-zinc-900 dark:text-white text-right whitespace-nowrap">{b.stock} <span className="text-[11px] font-normal text-zinc-500">{b.medicine?.unit}</span></td>
                     </tr>
                   );
                 })}
@@ -202,9 +209,10 @@ export default function LaporanPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                  {["Peringkat", "Nama Obat", "Satuan", "Total Terjual"].map(h => (
-                    <th key={h} className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">{h}</th>
-                  ))}
+                  <th className="text-center px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 w-16">#</th>
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Nama Obat</th>
+                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden sm:table-cell">Satuan</th>
+                  <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Total Terjual</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -212,7 +220,7 @@ export default function LaporanPage() {
                   <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Belum ada data penjualan.</td></tr>
                 ) : terlaris.map((m, i) => (
                   <tr key={i} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
                       <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
                         i === 0 ? "bg-yellow-100 text-yellow-700" :
                         i === 1 ? "bg-zinc-200 text-zinc-700" :
@@ -220,9 +228,12 @@ export default function LaporanPage() {
                         "bg-zinc-100 text-zinc-600"
                       }`}>{i + 1}</span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">{m.name}</td>
-                    <td className="px-4 py-3 text-zinc-500">{m.unit}</td>
-                    <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400">{m.total_qty}</td>
+                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white whitespace-nowrap">
+                      {m.name}
+                      <span className="block sm:hidden text-[11px] font-normal text-zinc-500 mt-0.5">{m.unit}</span>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-500 hidden sm:table-cell whitespace-nowrap">{m.unit}</td>
+                    <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">{m.total_qty}</td>
                   </tr>
                 ))}
               </tbody>

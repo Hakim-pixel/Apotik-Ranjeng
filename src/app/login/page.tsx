@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Activity } from "lucide-react";
 
@@ -28,9 +28,16 @@ export default function LoginPage() {
         setError("Email atau password salah. Periksa kembali.");
         setLoading(false);
       } else if (res?.ok) {
+        // Cek apakah session berhasil dibuat (cookie berhasil diset)
+        const session = await getSession();
+        if (!session) {
+          setError("Login sukses, tapi sesi tidak tersimpan. Cek NEXTAUTH_SECRET di Vercel.");
+          setLoading(false);
+          return;
+        }
+        
         router.push("/dashboard");
         router.refresh();
-        // Jangan set loading(false) di sini agar tombol tetap "Memproses..." saat redirect
       } else {
         setError("Terjadi kesalahan tidak terduga dari server.");
         setLoading(false);

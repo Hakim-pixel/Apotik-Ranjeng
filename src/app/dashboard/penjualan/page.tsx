@@ -172,8 +172,10 @@ export default function PenjualanPage() {
   };
 
   const subtotalTagihan = cart.reduce((s, c) => s + c.sell_price * c.qty, 0);
-  const diskonNum = parseInt(diskon.replace(/\D/g, ""), 10) || 0;
-  const totalTagihan = Math.max(0, subtotalTagihan - diskonNum);
+  const diskonPersen = parseInt(diskon.replace(/\D/g, ""), 10) || 0;
+  const validDiskonPersen = Math.min(100, Math.max(0, diskonPersen));
+  const diskonNominal = Math.floor(subtotalTagihan * (validDiskonPersen / 100));
+  const totalTagihan = Math.max(0, subtotalTagihan - diskonNominal);
   const bayarNum = parseInt(bayar.replace(/\D/g, ""), 10) || 0;
   const kembalian = bayarNum - totalTagihan;
 
@@ -185,7 +187,7 @@ export default function PenjualanPage() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         items: cart.map(c => ({ medicine_id: c.id, qty: c.qty })),
-        discount: diskonNum
+        discount: diskonNominal
       }),
     });
     const data = await res.json();
@@ -422,14 +424,15 @@ export default function PenjualanPage() {
             <div className="p-4 border-t border-[#e4e7ec] bg-white rounded-b-lg shrink-0">
               {isAdmin && (
                 <div className="mb-3">
-                  <label className="text-[12px] font-semibold text-[#667085] mb-1 flex items-center gap-1"><Tag size={12}/> Diskon (Rp)</label>
+                  <label className="text-[12px] font-semibold text-[#667085] mb-1 flex items-center gap-1"><Tag size={12}/> Diskon (%)</label>
                   <input
                     type="text"
                     placeholder="0"
                     value={diskon}
                     onChange={e => {
                       const v = e.target.value.replace(/\D/g, "");
-                      setDiskon(v ? parseInt(v).toLocaleString("id-ID") : "");
+                      const num = v ? parseInt(v) : 0;
+                      if (num <= 100) setDiskon(v ? num.toString() : "");
                     }}
                     className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[14px] font-mono focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
                   />
@@ -437,11 +440,17 @@ export default function PenjualanPage() {
               )}
               
               <div className="flex flex-col gap-1.5 mb-3">
-                {isAdmin && diskonNum > 0 && (
-                  <div className="flex justify-between items-center text-[13px]">
-                    <span className="text-[#667085]">Subtotal</span>
-                    <span className="font-medium text-[#344054]">{fmt(subtotalTagihan)}</span>
-                  </div>
+                {isAdmin && validDiskonPersen > 0 && (
+                  <>
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-[#667085]">Subtotal</span>
+                      <span className="font-medium text-[#344054]">{fmt(subtotalTagihan)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[13px] text-red-600">
+                      <span className="text-red-500">Diskon ({validDiskonPersen}%)</span>
+                      <span className="font-medium">-{fmt(diskonNominal)}</span>
+                    </div>
+                  </>
                 )}
                 <div className="flex justify-between items-center">
                   <span className="text-[14px] text-[#667085] font-semibold">Total Tagihan</span>

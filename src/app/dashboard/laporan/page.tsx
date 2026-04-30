@@ -4,243 +4,243 @@ import { useState, useEffect, useCallback } from "react";
 import { BarChart3, CalendarX, TrendingUp, ShoppingCart, Download } from "lucide-react";
 
 type SaleTransaction = {
-  id: string;
-  invoice_number: string;
-  created_at: string;
-  total_amount: number;
-  user: { name: string } | null;
+ id: string;
+ invoice_number: string;
+ created_at: string;
+ total_amount: number;
+ user: { name: string } | null;
 };
 
 type ExpiredBatch = {
-  id: string;
-  batch_number: string;
-  expired_date: string;
-  stock: number;
-  medicine: { name: string; barcode: string; unit: string } | null;
+ id: string;
+ batch_number: string;
+ expired_date: string;
+ stock: number;
+ medicine: { name: string; barcode: string; unit: string } | null;
 };
 
 type TopMedicine = {
-  name: string;
-  unit: string;
-  total_qty: number;
+ name: string;
+ unit: string;
+ total_qty: number;
 };
 
 function formatRupiah(n: number) {
-  return `Rp ${n.toLocaleString("id-ID")}`;
+ return `Rp ${n.toLocaleString("id-ID")}`;
 }
 
 export default function LaporanPage() {
-  const [activeTab, setActiveTab] = useState<"penjualan" | "expired" | "terlaris">("penjualan");
-  const [from, setFrom] = useState(() => {
-    const d = new Date(); d.setDate(1);
-    return d.toISOString().split("T")[0];
-  });
-  const [to, setTo] = useState(new Date().toISOString().split("T")[0]);
-  const [sales, setSales] = useState<SaleTransaction[]>([]);
-  const [expired, setExpired] = useState<ExpiredBatch[]>([]);
-  const [terlaris, setTerlaris] = useState<TopMedicine[]>([]);
-  const [loading, setLoading] = useState(false);
+ const [activeTab, setActiveTab] = useState<"penjualan" | "expired" | "terlaris">("penjualan");
+ const [from, setFrom] = useState(() => {
+ const d = new Date(); d.setDate(1);
+ return d.toISOString().split("T")[0];
+ });
+ const [to, setTo] = useState(new Date().toISOString().split("T")[0]);
+ const [sales, setSales] = useState<SaleTransaction[]>([]);
+ const [expired, setExpired] = useState<ExpiredBatch[]>([]);
+ const [terlaris, setTerlaris] = useState<TopMedicine[]>([]);
+ const [loading, setLoading] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    if (activeTab === "penjualan") {
-      const res = await fetch(`/api/laporan?type=penjualan&from=${from}&to=${to}`);
-      const data = await res.json();
-      setSales(Array.isArray(data) ? data : []);
-    } else if (activeTab === "expired") {
-      const res = await fetch("/api/laporan?type=expired");
-      const data = await res.json();
-      setExpired(Array.isArray(data) ? data : []);
-    } else {
-      const res = await fetch(`/api/laporan?type=terlaris&from=${from}&to=${to}`);
-      const data = await res.json();
-      setTerlaris(Array.isArray(data) ? data : []);
-    }
-    setLoading(false);
-  }, [activeTab, from, to]);
+ const fetchData = useCallback(async () => {
+ setLoading(true);
+ if (activeTab === "penjualan") {
+ const res = await fetch(`/api/laporan?type=penjualan&from=${from}&to=${to}`);
+ const data = await res.json();
+ setSales(Array.isArray(data) ? data : []);
+ } else if (activeTab === "expired") {
+ const res = await fetch("/api/laporan?type=expired");
+ const data = await res.json();
+ setExpired(Array.isArray(data) ? data : []);
+ } else {
+ const res = await fetch(`/api/laporan?type=terlaris&from=${from}&to=${to}`);
+ const data = await res.json();
+ setTerlaris(Array.isArray(data) ? data : []);
+ }
+ setLoading(false);
+ }, [activeTab, from, to]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+ useEffect(() => { fetchData(); }, [fetchData]);
 
-  const totalRevenue = sales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
+ const totalRevenue = sales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
 
-  const tabs = [
-    { key: "penjualan" as const, label: "Penjualan", icon: ShoppingCart },
-    { key: "expired" as const, label: "Hampir Expired", icon: CalendarX },
-    { key: "terlaris" as const, label: "Obat Terlaris", icon: TrendingUp },
-  ];
+ const tabs = [
+ { key: "penjualan" as const, label: "Penjualan", icon: ShoppingCart },
+ { key: "expired" as const, label: "Hampir Expired", icon: CalendarX },
+ { key: "terlaris" as const, label: "Obat Terlaris", icon: TrendingUp },
+ ];
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Laporan</h1>
-          <p className="text-sm text-zinc-500 mt-1">Analisis penjualan, stok, dan obat</p>
-        </div>
-      </div>
+ return (
+ <div className="space-y-6">
+ <div className="flex items-center justify-between">
+ <div>
+ <h1 className="text-2xl font-bold text-zinc-900 ">Laporan</h1>
+ <p className="text-sm text-zinc-500 mt-1">Analisis penjualan, stok, dan obat</p>
+ </div>
+ </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl w-fit">
-        {tabs.map(tab => {
-          const Icon = tab.icon;
-          return (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.key
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-              }`}>
-              <Icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+ {/* Tabs */}
+ <div className="flex gap-2 bg-zinc-100 p-1 rounded-xl w-fit">
+ {tabs.map(tab => {
+ const Icon = tab.icon;
+ return (
+ <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+ className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+ activeTab === tab.key
+ ? "bg-white text-zinc-900 shadow-sm"
+ : "text-zinc-500 hover:text-zinc-700 "
+ }`}>
+ <Icon className="h-4 w-4" />
+ {tab.label}
+ </button>
+ );
+ })}
+ </div>
 
-      {/* Filter Tanggal */}
-      {activeTab !== "expired" && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Periode:</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-          <span className="text-zinc-400 text-sm">s/d</span>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-      )}
+ {/* Filter Tanggal */}
+ {activeTab !== "expired" && (
+ <div className="flex items-center gap-3 flex-wrap">
+ <label className="text-sm font-medium text-zinc-600 ">Periode:</label>
+ <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+ className="px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+ <span className="text-zinc-400 text-sm">s/d</span>
+ <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+ className="px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+ </div>
+ )}
 
-      {/* Content */}
-      {loading ? (
-        <div className="text-center py-12 text-zinc-400">Memuat laporan...</div>
-      ) : activeTab === "penjualan" ? (
-        <div className="space-y-4">
-          {/* Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { label: "Total Transaksi", value: sales.length, icon: ShoppingCart, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20" },
-              { label: "Total Pendapatan", value: formatRupiah(totalRevenue), icon: BarChart3, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-              { label: "Rata-rata / Transaksi", value: sales.length > 0 ? formatRupiah(Math.round(totalRevenue / sales.length)) : "Rp 0", icon: TrendingUp, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-900/20" },
-            ].map(s => {
-              const Icon = s.icon;
-              return (
-                <div key={s.label} className="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
-                  <div className={`${s.bg} p-3 rounded-xl`}><Icon className={`h-5 w-5 ${s.color}`} /></div>
-                  <div>
-                    <p className="text-xs text-zinc-500">{s.label}</p>
-                    <p className="font-bold text-zinc-900 dark:text-white">{s.value}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Invoice</th>
-                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Tanggal</th>
-                    <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden md:table-cell">Kasir</th>
-                    <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {sales.length === 0 ? (
-                    <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
-                  ) : sales.map(s => (
-                    <tr key={s.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 dark:text-white whitespace-nowrap">{s.invoice_number}</td>
-                      <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">{new Date(s.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                      <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 hidden md:table-cell whitespace-nowrap">{s.user?.name || "-"}</td>
-                      <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">{formatRupiah(s.total_amount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      ) : activeTab === "expired" ? (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Nama Obat</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden md:table-cell">Barcode</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden sm:table-cell">No. Batch</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Expired</th>
-                  <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Sisa Stok</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {expired.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-8 text-zinc-400">✅ Tidak ada obat yang hampir expired dalam 3 bulan ke depan.</td></tr>
-                ) : expired.map(b => {
-                  const expDate = new Date(b.expired_date);
-                  const daysLeft = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                  return (
-                    <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white whitespace-nowrap">
-                        {b.medicine?.name || "-"}
-                        <span className="block sm:hidden text-[11px] font-mono text-zinc-500 mt-0.5">{b.batch_number}</span>
-                      </td>
-                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs hidden md:table-cell whitespace-nowrap">{b.medicine?.barcode || "-"}</td>
-                      <td className="px-4 py-3 font-mono text-xs hidden sm:table-cell whitespace-nowrap">{b.batch_number}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium ${
-                          daysLeft <= 30 ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" :
-                          "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                        }`}>
-                          {expDate.toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' })} 
-                          <span className="hidden sm:inline"> ({daysLeft} hari lagi)</span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-bold text-zinc-900 dark:text-white text-right whitespace-nowrap">{b.stock} <span className="text-[11px] font-normal text-zinc-500">{b.medicine?.unit}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                  <th className="text-center px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 w-16">#</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Nama Obat</th>
-                  <th className="text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hidden sm:table-cell">Satuan</th>
-                  <th className="text-right px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400">Total Terjual</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {terlaris.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Belum ada data penjualan.</td></tr>
-                ) : terlaris.map((m, i) => (
-                  <tr key={i} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-4 py-3 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
-                        i === 0 ? "bg-yellow-100 text-yellow-700" :
-                        i === 1 ? "bg-zinc-200 text-zinc-700" :
-                        i === 2 ? "bg-orange-100 text-orange-700" :
-                        "bg-zinc-100 text-zinc-600"
-                      }`}>{i + 1}</span>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white whitespace-nowrap">
-                      {m.name}
-                      <span className="block sm:hidden text-[11px] font-normal text-zinc-500 mt-0.5">{m.unit}</span>
-                    </td>
-                    <td className="px-4 py-3 text-zinc-500 hidden sm:table-cell whitespace-nowrap">{m.unit}</td>
-                    <td className="px-4 py-3 font-bold text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">{m.total_qty}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+ {/* Content */}
+ {loading ? (
+ <div className="text-center py-12 text-zinc-400">Memuat laporan...</div>
+ ) : activeTab === "penjualan" ? (
+ <div className="space-y-4">
+ {/* Summary */}
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+ {[
+ { label: "Total Transaksi", value: sales.length, icon: ShoppingCart, color: "text-blue-600 ", bg: "bg-blue-50 " },
+ { label: "Total Pendapatan", value: formatRupiah(totalRevenue), icon: BarChart3, color: "text-emerald-600 ", bg: "bg-emerald-50 " },
+ { label: "Rata-rata / Transaksi", value: sales.length > 0 ? formatRupiah(Math.round(totalRevenue / sales.length)) : "Rp 0", icon: TrendingUp, color: "text-purple-600 ", bg: "bg-purple-50 " },
+ ].map(s => {
+ const Icon = s.icon;
+ return (
+ <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-zinc-200 flex items-center gap-3">
+ <div className={`${s.bg} p-3 rounded-xl`}><Icon className={`h-5 w-5 ${s.color}`} /></div>
+ <div>
+ <p className="text-xs text-zinc-500">{s.label}</p>
+ <p className="font-bold text-zinc-900 ">{s.value}</p>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="overflow-x-auto">
+ <table className="w-full text-sm">
+ <thead>
+ <tr className="bg-zinc-50 border-b border-zinc-200 ">
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 ">Invoice</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 ">Tanggal</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 hidden md:table-cell">Kasir</th>
+ <th className="text-right px-4 py-3 font-semibold text-zinc-600 ">Total</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-zinc-100 ">
+ {sales.length === 0 ? (
+ <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
+ ) : sales.map(s => (
+ <tr key={s.id} className="hover:bg-zinc-50 ">
+ <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 whitespace-nowrap">{s.invoice_number}</td>
+ <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">{new Date(s.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+ <td className="px-4 py-3 text-zinc-600 hidden md:table-cell whitespace-nowrap">{s.user?.name || "-"}</td>
+ <td className="px-4 py-3 font-bold text-emerald-600 text-right whitespace-nowrap">{formatRupiah(s.total_amount)}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ ) : activeTab === "expired" ? (
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="overflow-x-auto">
+ <table className="w-full text-sm">
+ <thead>
+ <tr className="bg-zinc-50 border-b border-zinc-200 ">
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 ">Nama Obat</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 hidden md:table-cell">Barcode</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 hidden sm:table-cell">No. Batch</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 ">Expired</th>
+ <th className="text-right px-4 py-3 font-semibold text-zinc-600 ">Sisa Stok</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-zinc-100 ">
+ {expired.length === 0 ? (
+ <tr><td colSpan={5} className="text-center py-8 text-zinc-400">✅ Tidak ada obat yang hampir expired dalam 3 bulan ke depan.</td></tr>
+ ) : expired.map(b => {
+ const expDate = new Date(b.expired_date);
+ const daysLeft = Math.ceil((expDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+ return (
+ <tr key={b.id} className="hover:bg-zinc-50 ">
+ <td className="px-4 py-3 font-medium text-zinc-900 whitespace-nowrap">
+ {b.medicine?.name || "-"}
+ <span className="block sm:hidden text-[11px] font-mono text-zinc-500 mt-0.5">{b.batch_number}</span>
+ </td>
+ <td className="px-4 py-3 text-zinc-500 font-mono text-xs hidden md:table-cell whitespace-nowrap">{b.medicine?.barcode || "-"}</td>
+ <td className="px-4 py-3 font-mono text-xs hidden sm:table-cell whitespace-nowrap">{b.batch_number}</td>
+ <td className="px-4 py-3 whitespace-nowrap">
+ <span className={`px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium ${
+ daysLeft <= 30 ? "bg-red-100 text-red-600 " :
+ "bg-orange-100 text-orange-600 "
+ }`}>
+ {expDate.toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' })} 
+ <span className="hidden sm:inline"> ({daysLeft} hari lagi)</span>
+ </span>
+ </td>
+ <td className="px-4 py-3 font-bold text-zinc-900 text-right whitespace-nowrap">{b.stock} <span className="text-[11px] font-normal text-zinc-500">{b.medicine?.unit}</span></td>
+ </tr>
+ );
+ })}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ ) : (
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="overflow-x-auto">
+ <table className="w-full text-sm">
+ <thead>
+ <tr className="bg-zinc-50 border-b border-zinc-200 ">
+ <th className="text-center px-4 py-3 font-semibold text-zinc-600 w-16">#</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 ">Nama Obat</th>
+ <th className="text-left px-4 py-3 font-semibold text-zinc-600 hidden sm:table-cell">Satuan</th>
+ <th className="text-right px-4 py-3 font-semibold text-zinc-600 ">Total Terjual</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-zinc-100 ">
+ {terlaris.length === 0 ? (
+ <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Belum ada data penjualan.</td></tr>
+ ) : terlaris.map((m, i) => (
+ <tr key={i} className="hover:bg-zinc-50 ">
+ <td className="px-4 py-3 text-center whitespace-nowrap">
+ <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+ i === 0 ? "bg-yellow-100 text-yellow-700" :
+ i === 1 ? "bg-zinc-200 text-zinc-700" :
+ i === 2 ? "bg-orange-100 text-orange-700" :
+ "bg-zinc-100 text-zinc-600"
+ }`}>{i + 1}</span>
+ </td>
+ <td className="px-4 py-3 font-medium text-zinc-900 whitespace-nowrap">
+ {m.name}
+ <span className="block sm:hidden text-[11px] font-normal text-zinc-500 mt-0.5">{m.unit}</span>
+ </td>
+ <td className="px-4 py-3 text-zinc-500 hidden sm:table-cell whitespace-nowrap">{m.unit}</td>
+ <td className="px-4 py-3 font-bold text-emerald-600 text-right whitespace-nowrap">{m.total_qty}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ )}
+ </div>
+ );
 }

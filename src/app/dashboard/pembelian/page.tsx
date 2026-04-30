@@ -81,37 +81,40 @@ export default function PembelianPage() {
         ) : (
           <>
             {/* Table View */}
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[800px]">
-                <table className="w-full text-[13px] border-collapse">
-                  <thead>
-                    <tr className="bg-white border-b border-[#e4e7ec]">
-                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Tanggal Masuk</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Expired</th>
-                      <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
-                      <th className="text-left px-4 py-3 font-semibold text-[#667085]">Supplier</th>
+            <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+              <table className="w-full text-[13px] border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden md:table-cell">Tanggal Masuk</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085]">No. Batch</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden sm:table-cell">Expired</th>
+                    <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok Masuk</th>
+                    <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden md:table-cell">Supplier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredHistory.map(h => (
+                    <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
+                      <td className="px-4 py-3 text-[#344054] hidden md:table-cell">
+                        {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-[#101828]">
+                        {h.medicine?.name || "-"}
+                        <span className="block md:hidden text-[11px] font-normal text-[#667085] mt-0.5">
+                          {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' }) : "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085] whitespace-nowrap">{h.batch_number}</td>
+                      <td className="px-4 py-3 text-[#344054] whitespace-nowrap hidden sm:table-cell">
+                        {new Date(h.expired_date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-3 font-bold text-[#0f766e] text-right whitespace-nowrap">+{h.stock} <span className="text-[11px] font-normal text-[#667085]">{h.medicine?.unit}</span></td>
+                      <td className="px-4 py-3 text-[#667085] hidden md:table-cell">{h.supplier?.name || "-"}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filteredHistory.map(h => (
-                      <tr key={h.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
-                        <td className="px-4 py-3 text-[#344054] whitespace-nowrap">
-                          {h.created_at ? new Date(h.created_at).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "-"}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-[#101828] whitespace-nowrap">{h.medicine?.name || "-"}</td>
-                        <td className="px-4 py-3 font-mono text-[12px] font-medium text-[#667085] whitespace-nowrap">{h.batch_number}</td>
-                        <td className="px-4 py-3 text-[#344054] whitespace-nowrap">
-                          {new Date(h.expired_date).toLocaleDateString("id-ID")}
-                        </td>
-                        <td className="px-4 py-3 font-bold text-[#0f766e] text-right whitespace-nowrap">+{h.stock} {h.medicine?.unit}</td>
-                        <td className="px-4 py-3 text-[#667085] whitespace-nowrap">{h.supplier?.name || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </>
         )}

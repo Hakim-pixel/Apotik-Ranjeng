@@ -165,34 +165,44 @@ export default function ObatPage() {
       ) : (
         <>
           {/* Table View */}
-          <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto">
-            <table className="w-full min-w-[800px] text-[13px] border-collapse">
+          <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+            <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
                   <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Barcode</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Kategori</th>
-                  <th className="text-left px-4 py-3 font-semibold text-[#667085]">Satuan</th>
-                  <th className="text-right px-4 py-3 font-semibold text-[#667085]">Harga Jual</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden md:table-cell">Barcode</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden md:table-cell">Kategori</th>
+                  <th className="text-left px-4 py-3 font-semibold text-[#667085] hidden md:table-cell">Satuan</th>
+                  <th className="text-right px-4 py-3 font-semibold text-[#667085]">Harga</th>
                   <th className="text-right px-4 py-3 font-semibold text-[#667085]">Stok</th>
-                  <th className="text-center px-4 py-3 font-semibold text-[#667085]">Status</th>
+                  <th className="text-center px-4 py-3 font-semibold text-[#667085] hidden sm:table-cell">Status</th>
                   {canEdit && <th className="text-center px-4 py-3 font-semibold text-[#667085]">Aksi</th>}
                 </tr>
               </thead>
               <tbody>
                 {medicines.map((m) => (
                   <tr key={m.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
-                    <td className="px-4 py-3 font-semibold text-[#101828] whitespace-nowrap">{m.name}</td>
-                    <td className="px-4 py-3 text-[#667085] font-mono text-[12px] whitespace-nowrap">{m.barcode}</td>
-                    <td className="px-4 py-3 text-[#667085] whitespace-nowrap">{m.category?.name || "-"}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 font-semibold text-[#101828]">
+                      {m.name}
+                      {/* Tampilkan satuan kecil di bawah nama khusus di mobile */}
+                      <span className="block md:hidden text-[11px] text-[#667085] font-normal mt-0.5">{m.unit}</span>
+                    </td>
+                    <td className="px-4 py-3 text-[#667085] font-mono text-[12px] hidden md:table-cell">{m.barcode}</td>
+                    <td className="px-4 py-3 text-[#667085] hidden md:table-cell">{m.category?.name || "-"}</td>
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <span className="bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] px-2 py-0.5 rounded-md text-[11px] font-bold">
                         {m.unit}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-[#0f766e] whitespace-nowrap">{formatRupiah(m.sell_price)}</td>
-                    <td className="px-4 py-3 text-right font-bold text-[#101828] whitespace-nowrap">{m.total_stock}</td>
-                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-bold text-[#101828]">{m.total_stock}</span>
+                      {/* Indikator warning jika stok menipis, tampil di sebelah angka stok di mobile */}
+                      {m.total_stock <= m.min_stock && (
+                        <span className="inline-block sm:hidden ml-1 text-[#d97706]">⚠️</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center hidden sm:table-cell">
                       {m.total_stock <= m.min_stock ? (
                         <span className="bg-[#fffbeb] text-[#d97706] border border-[#fcd34d] px-2 py-0.5 rounded-md text-[11px] font-bold">
                           Menipis
@@ -204,8 +214,8 @@ export default function ObatPage() {
                       )}
                     </td>
                     {canEdit && (
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1 sm:gap-2">
                           <button onClick={() => openEditModal(m)} className="p-1.5 rounded-md text-[#667085] hover:text-[#0f766e] hover:bg-[#f0fdf4] transition-colors">
                             <Pencil size={16} />
                           </button>

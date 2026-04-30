@@ -135,51 +135,61 @@ export default function StokPage() {
         ) : (
           <>
             {/* Table View */}
-            <div className="w-full overflow-x-auto">
-              <div className="min-w-[800px]">
-                <table className="w-full text-[13px] border-collapse">
-                  <thead>
-                    <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
-                      {["Nama Obat", "Barcode", "No. Batch", "Expired", "Stok", "Supplier", "Status"].map(h => (
-                        <th key={h} className="text-left px-4 py-2.5 font-semibold text-[#667085]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {batches.map(b => {
-                      const isExpired = b.expired_date < today;
-                      const isWarn = !isExpired && b.expired_date <= warnDate;
-                      return (
-                        <tr key={b.id} className={`border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors ${isExpired ? "opacity-60" : ""}`}>
-                          <td className="px-4 py-3 font-semibold text-[#101828] whitespace-nowrap">{b.medicine?.name || "-"}</td>
-                          <td className="px-4 py-3 text-[#667085] font-mono text-[12px] whitespace-nowrap">{b.medicine?.barcode || "-"}</td>
-                          <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#344054] whitespace-nowrap">{b.batch_number}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`px-2 py-1 rounded-md text-[12px] font-semibold ${
-                              isExpired ? "bg-gray-100 text-gray-600 border border-gray-200" :
-                              isWarn ? "bg-[#fffbeb] text-[#92400e] border border-[#fcd34d]" :
-                              "bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]"
-                            }`}>
-                              {new Date(b.expired_date).toLocaleDateString("id-ID")}
+            <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+              <table className="w-full text-[13px] border-collapse">
+                <thead>
+                  <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#667085]">Nama Obat</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#667085] hidden md:table-cell">Barcode</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#667085]">No. Batch</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#667085]">Expired</th>
+                    <th className="text-right px-4 py-2.5 font-semibold text-[#667085]">Stok</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#667085] hidden md:table-cell">Supplier</th>
+                    <th className="text-center px-4 py-2.5 font-semibold text-[#667085] hidden sm:table-cell">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {batches.map(b => {
+                    const isExpired = b.expired_date < today;
+                    const isWarn = !isExpired && b.expired_date <= warnDate;
+                    return (
+                      <tr key={b.id} className={`border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors ${isExpired ? "opacity-60" : ""}`}>
+                        <td className="px-4 py-3 font-semibold text-[#101828]">
+                          {b.medicine?.name || "-"}
+                          {/* Indikator warning/expired di mobile */}
+                          {(isExpired || isWarn) && (
+                            <span className="block sm:hidden text-[11px] mt-0.5 font-bold text-red-600">
+                              {isExpired ? "Expired" : "⚠️ Segera Habis"}
                             </span>
-                          </td>
-                          <td className="px-4 py-3 font-bold text-[#101828] whitespace-nowrap">{b.stock}</td>
-                          <td className="px-4 py-3 text-[#667085] text-[12.5px] whitespace-nowrap">{b.supplier?.name || "-"}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {isExpired ? (
-                              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
-                            ) : isWarn ? (
-                              <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
-                            ) : (
-                              <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-[#667085] font-mono text-[12px] hidden md:table-cell">{b.medicine?.barcode || "-"}</td>
+                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#344054] whitespace-nowrap">{b.batch_number}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-md text-[12px] font-semibold ${
+                            isExpired ? "bg-gray-100 text-gray-600 border border-gray-200" :
+                            isWarn ? "bg-[#fffbeb] text-[#92400e] border border-[#fcd34d]" :
+                            "bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]"
+                          }`}>
+                            {new Date(b.expired_date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: '2-digit' })}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-[#101828] text-right">{b.stock}</td>
+                        <td className="px-4 py-3 text-[#667085] text-[12.5px] hidden md:table-cell">{b.supplier?.name || "-"}</td>
+                        <td className="px-4 py-3 text-center hidden sm:table-cell">
+                          {isExpired ? (
+                            <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-[11px] font-bold border border-gray-200">Expired</span>
+                          ) : isWarn ? (
+                            <span className="bg-[#fffbeb] text-[#d97706] px-2 py-1 rounded-md text-[11px] font-bold border border-[#fcd34d]">⚠ Segera Habis</span>
+                          ) : (
+                            <span className="bg-[#f0fdf4] text-[#16a34a] px-2 py-1 rounded-md text-[11px] font-bold border border-[#bbf7d0]">OK</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </>
         )}

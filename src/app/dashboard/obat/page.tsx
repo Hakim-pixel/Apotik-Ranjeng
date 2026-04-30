@@ -164,9 +164,9 @@ export default function ObatPage() {
         </div>
       ) : (
         <>
-          {/* Desktop Table View */}
-          <div className="hidden md:block bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
-            <table className="w-full text-[13px] border-collapse">
+          {/* Table View */}
+          <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto">
+            <table className="w-full min-w-[800px] text-[13px] border-collapse">
               <thead>
                 <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">
                   <th className="text-left px-4 py-3 font-semibold text-[#667085]">Nama Obat</th>
@@ -182,17 +182,17 @@ export default function ObatPage() {
               <tbody>
                 {medicines.map((m) => (
                   <tr key={m.id} className="border-b border-[#f0f2f5] hover:bg-[#f8f9fb] transition-colors">
-                    <td className="px-4 py-3 font-semibold text-[#101828]">{m.name}</td>
-                    <td className="px-4 py-3 text-[#667085] font-mono text-[12px]">{m.barcode}</td>
-                    <td className="px-4 py-3 text-[#667085]">{m.category?.name || "-"}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 font-semibold text-[#101828] whitespace-nowrap">{m.name}</td>
+                    <td className="px-4 py-3 text-[#667085] font-mono text-[12px] whitespace-nowrap">{m.barcode}</td>
+                    <td className="px-4 py-3 text-[#667085] whitespace-nowrap">{m.category?.name || "-"}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className="bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] px-2 py-0.5 rounded-md text-[11px] font-bold">
                         {m.unit}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-bold text-[#0f766e]">{formatRupiah(m.sell_price)}</td>
-                    <td className="px-4 py-3 text-right font-bold text-[#101828]">{m.total_stock}</td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-right font-bold text-[#0f766e] whitespace-nowrap">{formatRupiah(m.sell_price)}</td>
+                    <td className="px-4 py-3 text-right font-bold text-[#101828] whitespace-nowrap">{m.total_stock}</td>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
                       {m.total_stock <= m.min_stock ? (
                         <span className="bg-[#fffbeb] text-[#d97706] border border-[#fcd34d] px-2 py-0.5 rounded-md text-[11px] font-bold">
                           Menipis
@@ -204,7 +204,7 @@ export default function ObatPage() {
                       )}
                     </td>
                     {canEdit && (
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
                           <button onClick={() => openEditModal(m)} className="p-1.5 rounded-md text-[#667085] hover:text-[#0f766e] hover:bg-[#f0fdf4] transition-colors">
                             <Pencil size={16} />
@@ -221,58 +221,6 @@ export default function ObatPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="md:hidden flex flex-col gap-3">
-            {medicines.map((m) => (
-              <div key={m.id} className="bg-white border border-[#e4e7ec] rounded-lg p-4 flex flex-col gap-3 shadow-sm">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <h3 className="font-bold text-[#101828] text-[15px] leading-tight mb-1">{m.name}</h3>
-                    <div className="text-[12px] font-mono text-[#667085]">{m.barcode}</div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="bg-[#eff6ff] text-[#1e40af] border border-[#bfdbfe] px-2 py-0.5 rounded-md text-[11px] font-bold">
-                      {m.unit}
-                    </span>
-                    {m.total_stock <= m.min_stock ? (
-                      <span className="bg-[#fffbeb] text-[#d97706] border border-[#fcd34d] px-2 py-0.5 rounded-md text-[11px] font-bold">Menipis</span>
-                    ) : (
-                      <span className="bg-[#f0fdf4] text-[#16a34a] border border-[#bbf7d0] px-2 py-0.5 rounded-md text-[11px] font-bold">Tersedia</span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-[13px] bg-[#f8f9fb] p-2.5 rounded-md border border-[#f0f2f5]">
-                  <div>
-                    <span className="text-[#667085] block text-[11px] mb-0.5">Kategori</span>
-                    <span className="font-semibold text-[#344054]">{m.category?.name || "-"}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#667085] block text-[11px] mb-0.5">Stok</span>
-                    <span className="font-bold text-[#101828]">{m.total_stock}</span>
-                  </div>
-                  <div className="col-span-2 mt-1">
-                    <span className="text-[#667085] block text-[11px] mb-0.5">Harga Jual</span>
-                    <span className="font-bold text-[#0f766e] text-[14px]">{formatRupiah(m.sell_price)}</span>
-                  </div>
-                </div>
-
-                {canEdit && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-[#f0f2f5] mt-1">
-                    <button onClick={() => openEditModal(m)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 border border-[#d0d5dd] rounded-md text-[#344054] text-[12px] font-semibold hover:bg-gray-50 transition-colors">
-                      <Pencil size={13} /> Edit
-                    </button>
-                    {isAdmin && (
-                      <button onClick={() => handleDelete(m.id, m.name)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 border border-[#fca5a5] bg-[#fee2e2] rounded-md text-[#991b1b] text-[12px] font-semibold hover:bg-[#fecaca] transition-colors">
-                        <Trash2 size={13} /> Hapus
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </>
       )}

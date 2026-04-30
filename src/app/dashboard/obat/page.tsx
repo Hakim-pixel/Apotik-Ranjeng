@@ -165,7 +165,7 @@ export default function ObatPage() {
       ) : (
         <>
           {/* Table View */}
-          <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+          <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">

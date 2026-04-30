@@ -132,7 +132,7 @@ export default function LaporanPage() {
  );
  })}
  </div>
- <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
  <div className="overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
@@ -160,7 +160,7 @@ export default function LaporanPage() {
  </div>
  </div>
  ) : activeTab === "expired" ? (
- <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
  <div className="overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
@@ -204,7 +204,7 @@ export default function LaporanPage() {
  </div>
  </div>
  ) : (
- <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
  <div className="overflow-x-auto">
  <table className="w-full text-sm">
  <thead>

@@ -120,7 +120,7 @@ export default function StokPage() {
       </div>
 
       {/* Table Area */}
-      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto flex flex-col">
         {loading || batches.length === 0 ? (
           <div className="py-12 px-4 text-center">
             {loading ? (
@@ -135,7 +135,7 @@ export default function StokPage() {
         ) : (
           <>
             {/* Table View */}
-            <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-hidden">
+            <div className="w-full bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto">
               <table className="w-full text-[13px] border-collapse">
                 <thead>
                   <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">

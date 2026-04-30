@@ -248,7 +248,7 @@ export default function PenjualanPage() {
         {/* Kiri: Cari + Bayar */}
         <div className="flex-1 flex flex-col gap-4 min-w-0">
           {/* Search Area */}
-          <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
+          <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto flex flex-col">
             <div className="px-3 py-2.5 border-b border-[#f0f2f5] flex items-center gap-2">
               <Search size={16} className="text-[#98a2b3]" />
               <input

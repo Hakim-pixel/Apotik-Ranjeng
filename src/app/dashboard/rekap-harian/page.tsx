@@ -198,7 +198,7 @@ export default function RekapHarianPage() {
  </div>
 
  {/* Daftar Transaksi */}
- <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
  <div className="flex items-center gap-2 px-5 py-4 border-b border-zinc-100 ">
  <Receipt className="h-5 w-5 text-emerald-500" />
  <h2 className="font-semibold text-zinc-900 ">

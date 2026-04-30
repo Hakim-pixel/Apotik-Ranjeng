@@ -125,7 +125,7 @@ export default function SupplierPage() {
         )}
       </div>
 
-      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto flex flex-col">
         {/* Search */}
         <div className="px-4 py-3 border-b border-[#e4e7ec] bg-[#f8f9fb]">
           <div className="relative max-w-md">
@@ -148,7 +148,7 @@ export default function SupplierPage() {
             <p className="text-[#98a2b3] text-[13.5px]">Belum ada data supplier yang ditemukan.</p>
           </div>
         ) : (
-          <div className="w-full overflow-hidden">
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr className="bg-white border-b border-[#e4e7ec]">

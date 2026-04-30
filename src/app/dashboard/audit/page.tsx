@@ -58,7 +58,7 @@ export default function AuditPage() {
         </p>
       </div>
 
-      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-white border border-[#e4e7ec] rounded-lg overflow-x-auto flex flex-col">
         {loading ? (
           <div className="py-12 px-4 text-center text-[#98a2b3] text-[13.5px]">Memuat log audit...</div>
         ) : logs.length === 0 ? (
@@ -67,7 +67,7 @@ export default function AuditPage() {
             <p className="text-[#98a2b3] text-[13.5px]">Belum ada aktivitas yang tercatat di sistem.</p>
           </div>
         ) : (
-          <div className="w-full overflow-hidden">
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-[13px] border-collapse">
               <thead>
                 <tr className="bg-[#f8f9fb] border-b border-[#e4e7ec]">

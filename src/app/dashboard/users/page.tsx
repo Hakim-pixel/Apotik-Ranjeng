@@ -85,7 +85,7 @@ export default function UsersPage() {
  ))}
  </div>
 
- <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+ <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
  {loading ? (
  <div className="text-center py-12 text-zinc-400">Memuat data user...</div>
  ) : users.length === 0 ? (

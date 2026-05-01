@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { BarChart3, CalendarX, TrendingUp, ShoppingCart, Download, ChevronUp, ChevronDown } from "lucide-react";
+import * as XLSX from "xlsx";
 
 type SaleTransaction = {
  id: string;
  invoice_number: string;
  created_at: string;
  total_amount: number;
+ discount: number;
  user: { name: string } | null;
  transaction_details: {
    qty: number;
@@ -69,6 +71,33 @@ export default function LaporanPage() {
  useEffect(() => { fetchData(); }, [fetchData]);
 
  const totalRevenue = sales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
+
+  const handleExportExcel = () => {
+    if (!sales || sales.length === 0) return;
+
+    const rows: any[] = [];
+    
+    sales.forEach(s => {
+      s.transaction_details?.forEach((d, index) => {
+        rows.push({
+          "No. Invoice": s.invoice_number,
+          "Tanggal": new Date(s.created_at).toLocaleString("id-ID"),
+          "Kasir": s.user?.name || "-",
+          "Nama Obat": d.medicine?.name || "-",
+          "Harga Satuan (Rp)": d.price,
+          "Qty": d.qty,
+          "Subtotal Obat (Rp)": d.subtotal,
+          "Diskon Transaksi (Rp)": index === 0 ? (s.discount || 0) : 0,
+          "Total Akhir Transaksi (Rp)": index === 0 ? s.total_amount : 0,
+        });
+      });
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
+    XLSX.writeFile(workbook, `Laporan_Penjualan_${from}_sampai_${to}.xlsx`);
+  };
 
  const tabs = [
  { key: "penjualan" as const, label: "Penjualan", icon: ShoppingCart },
@@ -202,6 +231,18 @@ export default function LaporanPage() {
                                     </tr>
                                   ))}
                                 </tbody>
+                                <tfoot>
+                                  {(s.discount > 0) && (
+                                    <tr className="text-zinc-500 font-medium border-t border-zinc-100">
+                                      <td colSpan={3} className="py-1.5 text-right">Diskon:</td>
+                                      <td className="py-1.5 text-right text-red-500">-{formatRupiah(s.discount)}</td>
+                                    </tr>
+                                  )}
+                                  <tr className="font-bold text-zinc-900 border-t border-zinc-200">
+                                    <td colSpan={3} className="py-1.5 text-right">TOTAL:</td>
+                                    <td className="py-1.5 text-right text-emerald-600">{formatRupiah(s.total_amount)}</td>
+                                  </tr>
+                                </tfoot>
                               </table>
                             </div>
                           </td>
@@ -212,6 +253,14 @@ export default function LaporanPage() {
                 })}
               </tbody>
  </table>
+ </div>
+ <div className="flex justify-end p-4">
+   <button
+     onClick={handleExportExcel}
+     className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+   >
+     <Download size={16} /> Export Excel (Detail)
+   </button>
  </div>
  </div>
  </div>

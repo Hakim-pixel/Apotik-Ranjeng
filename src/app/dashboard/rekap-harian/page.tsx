@@ -25,6 +25,7 @@ type Transaction = {
  invoice_number: string;
  created_at: string;
  total_amount: number;
+ discount: number;
  user: { name: string } | null;
  transaction_details: TransactionDetail[];
 };
@@ -86,7 +87,7 @@ export default function RekapHarianPage() {
  
  data.transactions.forEach(tx => {
  const originalTotal = tx.transaction_details.reduce((sum, d) => sum + d.subtotal, 0);
- const discount = originalTotal - tx.total_amount;
+ const discount = tx.discount;
  
  tx.transaction_details.forEach((d, index) => {
  rows.push({
@@ -278,13 +279,15 @@ export default function RekapHarianPage() {
  ))}
  </tbody>
  <tfoot>
- <tr className="border-t border-zinc-200 ">
- <td colSpan={3} className="py-2 text-right font-bold text-zinc-900 ">
- TOTAL
- </td>
- <td className="py-2 text-right font-bold text-emerald-600 ">
- {formatRupiah(tx.total_amount)}
- </td>
+ {tx.discount > 0 && (
+ <tr className="text-zinc-500 font-medium">
+ <td colSpan={3} className="py-2 text-right">Diskon:</td>
+ <td className="py-2 text-right text-red-500">-{formatRupiah(tx.discount)}</td>
+ </tr>
+ )}
+ <tr className="font-bold text-zinc-900 border-t border-zinc-200">
+ <td colSpan={3} className="py-2 text-right">TOTAL:</td>
+ <td className="py-2 text-right text-emerald-600">{formatRupiah(tx.total_amount)}</td>
  </tr>
  </tfoot>
  </table>

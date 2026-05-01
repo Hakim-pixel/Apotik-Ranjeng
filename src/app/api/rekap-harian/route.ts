@@ -15,6 +15,7 @@ export async function GET(req: Request) {
       invoice_number,
       created_at,
       total_amount,
+      discount,
       user:users(name),
       transaction_details(
         qty,

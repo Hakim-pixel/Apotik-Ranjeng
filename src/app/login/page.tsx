@@ -81,7 +81,7 @@ export default function LoginPage() {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@apotik.com"
+              placeholder="Masukan Email Anda"
               className="w-full px-3.5 py-2.5 border border-[#d0d5dd] rounded-lg text-[14px] outline-none transition-colors focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e]"
             />
           </div>

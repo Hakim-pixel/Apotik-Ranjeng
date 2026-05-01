@@ -5,7 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session || !["ADMIN", "APOTEKER"].includes(session.user.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -17,7 +18,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const { data, error } = await supabase
     .from("categories")
     .update({ name, description })
-    .eq("id", params.id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -25,7 +26,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(data);
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session || !["ADMIN", "APOTEKER"].includes(session.user.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -35,14 +37,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const { count, error: checkErr } = await supabase
     .from("medicines")
     .select("*", { count: "exact", head: true })
-    .eq("category_id", params.id);
+    .eq("category_id", id);
 
   if (checkErr) return NextResponse.json({ error: checkErr.message }, { status: 500 });
   if (count && count > 0) {
     return NextResponse.json({ error: "Tidak bisa dihapus karena ada obat yang menggunakan kategori ini." }, { status: 400 });
   }
 
-  const { error } = await supabase.from("categories").delete().eq("id", params.id);
+  const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { BarChart3, CalendarX, TrendingUp, ShoppingCart, Download } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { BarChart3, CalendarX, TrendingUp, ShoppingCart, Download, ChevronUp, ChevronDown } from "lucide-react";
 
 type SaleTransaction = {
  id: string;
@@ -9,6 +9,12 @@ type SaleTransaction = {
  created_at: string;
  total_amount: number;
  user: { name: string } | null;
+ transaction_details: {
+   qty: number;
+   price: number;
+   subtotal: number;
+   medicine: { name: string } | null;
+ }[];
 };
 
 type ExpiredBatch = {
@@ -40,6 +46,7 @@ export default function LaporanPage() {
  const [expired, setExpired] = useState<ExpiredBatch[]>([]);
  const [terlaris, setTerlaris] = useState<TopMedicine[]>([]);
  const [loading, setLoading] = useState(false);
+ const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
 
  const fetchData = useCallback(async () => {
  setLoading(true);
@@ -143,18 +150,67 @@ export default function LaporanPage() {
  <th className="text-right px-4 py-3 font-semibold text-zinc-600 ">Total</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-zinc-100 ">
- {sales.length === 0 ? (
- <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
- ) : sales.map(s => (
- <tr key={s.id} className="hover:bg-zinc-50 ">
- <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 whitespace-nowrap">{s.invoice_number}</td>
- <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">{new Date(s.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}</td>
- <td className="px-4 py-3 text-zinc-600 hidden md:table-cell whitespace-nowrap">{s.user?.name || "-"}</td>
- <td className="px-4 py-3 font-bold text-emerald-600 text-right whitespace-nowrap">{formatRupiah(s.total_amount)}</td>
- </tr>
- ))}
- </tbody>
+              <tbody className="divide-y divide-zinc-100">
+                {sales.length === 0 ? (
+                  <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
+                ) : sales.map(s => {
+                  const isExpanded = expandedInvoice === s.id;
+                  return (
+                    <React.Fragment key={s.id}>
+                      <tr 
+                        onClick={() => setExpandedInvoice(isExpanded ? null : s.id)}
+                        className={`hover:bg-zinc-50 cursor-pointer transition-colors ${isExpanded ? "bg-zinc-50" : ""}`}
+                      >
+                        <td className="px-4 py-3 font-mono text-xs font-medium text-zinc-900 whitespace-nowrap">
+                          {s.invoice_number}
+                        </td>
+                        <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">
+                          {new Date(s.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td className="px-4 py-3 text-zinc-600 hidden md:table-cell whitespace-nowrap">
+                          {s.user?.name || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-emerald-600 text-right whitespace-nowrap flex justify-end items-center gap-2">
+                          {formatRupiah(s.total_amount)}
+                          <span className="text-zinc-400">
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </span>
+                        </td>
+                      </tr>
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <tr className="bg-zinc-50">
+                          <td colSpan={4} className="p-0 border-b border-zinc-200">
+                            <div className="px-8 py-3 border-l-4 border-emerald-500">
+                              <p className="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">Item Pembelian:</p>
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-zinc-500 border-b border-zinc-200">
+                                    <th className="text-left py-1 font-medium">Nama Obat</th>
+                                    <th className="text-right py-1 font-medium">Qty</th>
+                                    <th className="text-right py-1 font-medium hidden sm:table-cell">Harga</th>
+                                    <th className="text-right py-1 font-medium">Subtotal</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100">
+                                  {s.transaction_details?.map((item, idx) => (
+                                    <tr key={idx} className="text-zinc-700">
+                                      <td className="py-1.5 font-medium">{item.medicine?.name || "-"}</td>
+                                      <td className="py-1.5 text-right text-zinc-500">{item.qty}</td>
+                                      <td className="py-1.5 text-right text-zinc-500 hidden sm:table-cell">{formatRupiah(item.price)}</td>
+                                      <td className="py-1.5 text-right font-semibold text-emerald-600">{formatRupiah(item.subtotal)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
  </table>
  </div>
  </div>

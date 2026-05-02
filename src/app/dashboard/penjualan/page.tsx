@@ -264,11 +264,11 @@ export default function PenjualanPage() {
 
             {medicines.length > 0 && (
               <div className="max-h-[300px] overflow-y-auto overflow-x-auto">
-                <table className="w-full border-collapse text-[13px] min-w-[500px]">
+                <table className="w-full border-collapse text-[13px]">
                   <thead>
                     <tr className="bg-[#f8f9fb]">
                       <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Nama Obat</th>
-                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Barcode</th>
+                      <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec] hidden sm:table-cell">Barcode</th>
                       <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Stok</th>
                       <th className="py-2 px-3 text-left text-[#667085] font-semibold border-b border-[#e4e7ec]">Harga</th>
                       <th className="py-2 px-3 border-b border-[#e4e7ec]"></th>
@@ -281,17 +281,17 @@ export default function PenjualanPage() {
                         onClick={() => m.total_stock > 0 && addToCart(m)}
                       >
                         <td className="py-2 px-3 font-semibold">{m.name}</td>
-                        <td className="py-2 px-3 font-mono text-[12px] text-[#667085]">{m.barcode}</td>
-                        <td className="py-2 px-3">
+                        <td className="py-2 px-3 font-mono text-[12px] text-[#667085] hidden sm:table-cell">{m.barcode}</td>
+                        <td className="py-2 px-3 whitespace-nowrap">
                           <span className={`font-bold ${m.total_stock === 0 ? 'text-[#dc2626]' : m.total_stock <= m.min_stock ? 'text-[#d97706]' : 'text-[#16a34a]'}`}>
-                            {m.total_stock} {m.unit}
+                            {m.total_stock} <span className="text-[10px] sm:text-[12px]">{m.unit}</span>
                             {m.total_stock <= m.min_stock && m.total_stock > 0 && " ⚠️"}
                           </span>
                         </td>
-                        <td className="py-2 px-3 font-bold text-[#0f766e]">{fmt(m.sell_price)}</td>
+                        <td className="py-2 px-3 font-bold text-[#0f766e] whitespace-nowrap">{fmt(m.sell_price)}</td>
                         <td className="py-2 px-3 text-right">
-                          <span className="text-[12px] bg-[#f0fdf4] text-[#14532d] px-2 py-1 rounded-md font-bold shrink-0 border border-[#bbf7d0]">
-                            + Tambah
+                          <span className="text-[12px] bg-[#f0fdf4] text-[#14532d] px-2 py-1 rounded-md font-bold shrink-0 border border-[#bbf7d0] inline-flex items-center justify-center">
+                            + <span className="hidden sm:inline ml-1">Tambah</span>
                           </span>
                         </td>
                       </tr>

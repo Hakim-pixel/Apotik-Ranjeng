@@ -54,11 +54,7 @@ export default function LoginPage() {
       <div className="bg-white border border-[#e4e7ec] rounded-xl p-8 w-full max-w-[380px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-[#0f766e] rounded-xl inline-flex items-center justify-center mb-4 shadow-sm">
-            <Activity size={24} color="#fff" strokeWidth={2.5} />
-          </div>
           <h1 className="text-[20px] font-bold text-[#101828] m-0 leading-tight">Apotek Ranjeng</h1>
-          <p className="text-[14px] text-[#667085] mt-1.5 mb-0 font-medium">Sistem Inventaris & Kasir</p>
         </div>
 
         {/* Error */}

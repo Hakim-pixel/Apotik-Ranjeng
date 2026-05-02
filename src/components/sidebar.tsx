@@ -55,9 +55,6 @@ export default function Sidebar() {
       {/* Mobile Top Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#e4e7ec] flex items-center justify-between px-4 z-40 shadow-sm">
         <div className="flex items-center gap-2.5">
-          <div className="bg-[#0f766e] p-1.5 rounded-md flex">
-            <Activity size={16} color="#fff" />
-          </div>
           <span className="font-bold text-[#101828] text-[14px]">Apotek Ranjeng</span>
         </div>
         <button onClick={() => setIsOpen(true)} className="p-1.5 text-[#475467] hover:bg-gray-100 rounded-md">
@@ -80,12 +77,8 @@ export default function Sidebar() {
         {/* Logo Area */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-[#2d3348]">
           <div className="flex items-center gap-2.5">
-            <div className="bg-[#0f766e] p-1.5 rounded-md flex">
-              <Activity size={16} color="#fff" />
-            </div>
             <div>
               <div className="text-white font-bold text-[13px] leading-tight">Apotek Ranjeng</div>
-              <div className="text-[#6b7fa3] text-[11px]">Sistem Inventaris</div>
             </div>
           </div>
           <button className="md:hidden text-[#6b7fa3] p-1 hover:text-white" onClick={() => setIsOpen(false)}>

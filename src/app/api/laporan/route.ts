@@ -40,26 +40,33 @@ export async function GET(req: Request) {
 
   if (type === "terlaris") {
     const { data, error } = await supabase
-      .from("transaction_details")
-      .select(`medicine_id, qty, medicine:medicines(name, unit)`)
-      .gte("created_at", `${from}T00:00:00`);
+      .from("transactions")
+      .select(`
+        type,
+        transaction_details(medicine_id, qty, medicine:medicines(name, unit))
+      `)
+      .eq("type", "OUT")
+      .gte("created_at", `${from}T00:00:00`)
+      .lte("created_at", `${to}T23:59:59`);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     type GroupedItem = { name: string; unit: string; total_qty: number };
     const grouped: Record<string, GroupedItem> = {};
 
-    for (const row of data || []) {
-      const med = (row.medicine as unknown) as { name: string; unit: string } | null;
-      const key = row.medicine_id;
-      if (!grouped[key]) {
-        grouped[key] = {
-          name: med?.name || "Unknown",
-          unit: med?.unit || "",
-          total_qty: 0,
-        };
+    for (const tx of data || []) {
+      for (const row of tx.transaction_details || []) {
+        const med = (row.medicine as unknown) as { name: string; unit: string } | null;
+        const key = row.medicine_id;
+        if (!grouped[key]) {
+          grouped[key] = {
+            name: med?.name || "Unknown",
+            unit: med?.unit || "",
+            total_qty: 0,
+          };
+        }
+        grouped[key].total_qty += row.qty;
       }
-      grouped[key].total_qty += row.qty;
     }
 
     const sorted = Object.values(grouped)

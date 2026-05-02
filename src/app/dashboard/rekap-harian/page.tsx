@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import * as XLSX from "xlsx";
 import {
  CalendarDays,
  ShoppingCart,
@@ -25,7 +24,6 @@ type Transaction = {
  invoice_number: string;
  created_at: string;
  total_amount: number;
- discount: number;
  user: { name: string } | null;
  transaction_details: TransactionDetail[];
 };
@@ -37,8 +35,8 @@ type RekapData = {
  transactions: Transaction[];
 };
 
-function formatRupiah(n: number) {
- return `Rp ${n.toLocaleString("id-ID")}`;
+function formatRupiah(n: number | null | undefined) {
+ return `Rp ${(n || 0).toLocaleString("id-ID")}`;
 }
 
 function formatWaktu(iso: string) {
@@ -80,14 +78,15 @@ export default function RekapHarianPage() {
  setExpandedId((prev) => (prev === id ? null : id));
  };
 
- const handleExportExcel = () => {
+ const handleExportExcel = async () => {
  if (!data || data.transactions.length === 0) return;
 
+ const XLSX = await import("xlsx");
  const rows: any[] = [];
  
  data.transactions.forEach(tx => {
  const originalTotal = tx.transaction_details.reduce((sum, d) => sum + d.subtotal, 0);
- const discount = tx.discount;
+ const discount = originalTotal - tx.total_amount;
  
  tx.transaction_details.forEach((d, index) => {
  rows.push({
@@ -218,7 +217,10 @@ export default function RekapHarianPage() {
  </div>
  ) : (
  <div className="divide-y divide-zinc-100 ">
- {data.transactions.map((tx) => (
+ {data.transactions.map((tx) => {
+ const originalTotal = tx.transaction_details?.reduce((sum, d) => sum + d.subtotal, 0) || 0;
+ const discountAmount = originalTotal - tx.total_amount;
+ return (
  <div key={tx.id}>
  {/* Baris Utama */}
  <button
@@ -279,10 +281,10 @@ export default function RekapHarianPage() {
  ))}
  </tbody>
  <tfoot>
- {tx.discount > 0 && (
+ {discountAmount > 0 && (
  <tr className="text-zinc-500 font-medium">
  <td colSpan={3} className="py-2 text-right">Diskon:</td>
- <td className="py-2 text-right text-red-500">-{formatRupiah(tx.discount)}</td>
+ <td className="py-2 text-right text-red-500">-{formatRupiah(discountAmount)}</td>
  </tr>
  )}
  <tr className="font-bold text-zinc-900 border-t border-zinc-200">
@@ -294,7 +296,8 @@ export default function RekapHarianPage() {
  </div>
  )}
  </div>
- ))}
+ );
+ })}
  </div>
  )}
  </div>

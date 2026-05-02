@@ -68,7 +68,7 @@ export default async function DashboardPage() {
         <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Dashboard</h1>
         <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">
           Selamat datang, <strong>{session?.user?.name}</strong> —
-          login sebagai <span className={`font-semibold ${role === "ADMIN" ? "text-[#7c3aed]" : "text-[#0f766e]"}`}>
+          <span className={`font-semibold ${role === "ADMIN" ? "text-[#7c3aed]" : "text-[#0f766e]"}`}>
             {role === "ADMIN" ? "Admin" : "Kasir"}
           </span>
         </p>

@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { BarChart3, CalendarX, TrendingUp, ShoppingCart, Download, ChevronUp, ChevronDown } from "lucide-react";
-import * as XLSX from "xlsx";
 
 type SaleTransaction = {
  id: string;
  invoice_number: string;
  created_at: string;
  total_amount: number;
- discount: number;
  user: { name: string } | null;
  transaction_details: {
    qty: number;
@@ -33,8 +31,8 @@ type TopMedicine = {
  total_qty: number;
 };
 
-function formatRupiah(n: number) {
- return `Rp ${n.toLocaleString("id-ID")}`;
+function formatRupiah(n: number | null | undefined) {
+ return `Rp ${(n || 0).toLocaleString("id-ID")}`;
 }
 
 export default function LaporanPage() {
@@ -72,12 +70,16 @@ export default function LaporanPage() {
 
  const totalRevenue = sales.reduce((sum, s) => sum + (s.total_amount || 0), 0);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!sales || sales.length === 0) return;
 
+    const XLSX = await import("xlsx");
     const rows: any[] = [];
     
     sales.forEach(s => {
+      const originalTotal = s.transaction_details?.reduce((sum, d) => sum + d.subtotal, 0) || 0;
+      const discount = originalTotal - s.total_amount;
+      
       s.transaction_details?.forEach((d, index) => {
         rows.push({
           "No. Invoice": s.invoice_number,
@@ -87,7 +89,7 @@ export default function LaporanPage() {
           "Harga Satuan (Rp)": d.price,
           "Qty": d.qty,
           "Subtotal Obat (Rp)": d.subtotal,
-          "Diskon Transaksi (Rp)": index === 0 ? (s.discount || 0) : 0,
+          "Diskon Transaksi (Rp)": index === 0 ? discount : 0,
           "Total Akhir Transaksi (Rp)": index === 0 ? s.total_amount : 0,
         });
       });
@@ -184,6 +186,8 @@ export default function LaporanPage() {
                   <tr><td colSpan={4} className="text-center py-8 text-zinc-400">Tidak ada transaksi pada periode ini.</td></tr>
                 ) : sales.map(s => {
                   const isExpanded = expandedInvoice === s.id;
+                  const originalTotal = s.transaction_details?.reduce((sum, d) => sum + d.subtotal, 0) || 0;
+                  const discountAmount = originalTotal - s.total_amount;
                   return (
                     <React.Fragment key={s.id}>
                       <tr 
@@ -232,10 +236,10 @@ export default function LaporanPage() {
                                   ))}
                                 </tbody>
                                 <tfoot>
-                                  {(s.discount > 0) && (
+                                  {(discountAmount > 0) && (
                                     <tr className="text-zinc-500 font-medium border-t border-zinc-100">
                                       <td colSpan={3} className="py-1.5 text-right">Diskon:</td>
-                                      <td className="py-1.5 text-right text-red-500">-{formatRupiah(s.discount)}</td>
+                                      <td className="py-1.5 text-right text-red-500">-{formatRupiah(discountAmount)}</td>
                                     </tr>
                                   )}
                                   <tr className="font-bold text-zinc-900 border-t border-zinc-200">

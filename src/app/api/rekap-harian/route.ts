@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date") || new Date().toISOString().split("T")[0];
 
-  // Rekap harian: semua transaksi OUT pada tanggal tertentu
+  // Rekap harian: hanya transaksi TUNAI (kredit tidak masuk rekap pendapatan harian)
   const { data: transactions, error } = await supabase
     .from("transactions")
     .select(`
@@ -15,6 +15,7 @@ export async function GET(req: Request) {
       invoice_number,
       created_at,
       total_amount,
+      payment_method,
       user:users(name),
       transaction_details(
         qty,
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
       )
     `)
     .eq("type", "OUT")
+    .eq("payment_method", "tunai")
     .gte("created_at", `${date}T00:00:00`)
     .lte("created_at", `${date}T23:59:59`)
     .order("created_at", { ascending: false });

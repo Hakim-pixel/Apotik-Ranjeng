@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { medicine_id, batch_number, expired_date, stock, supplier_id } = body;
+  const { medicine_id, batch_number, expired_date, stock, supplier_id, purchase_price } = body;
 
   if (!medicine_id || !batch_number || !expired_date || !stock) {
     return NextResponse.json({ error: "Semua field wajib diisi." }, { status: 400 });
@@ -49,7 +49,12 @@ export async function POST(req: Request) {
   }
 
   const { data, error } = await supabase.from("medicine_batches").insert([{
-    medicine_id, batch_number, expired_date, stock: Number(stock), supplier_id
+    medicine_id, 
+    batch_number, 
+    expired_date, 
+    stock: Number(stock), 
+    supplier_id,
+    purchase_price: purchase_price ? Number(purchase_price) : null
   }]).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

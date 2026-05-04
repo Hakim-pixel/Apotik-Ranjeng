@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer, ShoppingCart, Tag } from "lucide-react";
+import { Search, Plus, Minus, Trash2, AlertTriangle, X, Package, Printer, ShoppingCart, Tag, CreditCard, Clock, CheckCircle } from "lucide-react";
 
 type Medicine = {
   id: string; name: string; barcode: string;
@@ -11,7 +11,8 @@ type Medicine = {
 type CartItem = Medicine & { qty: number };
 type LowStockItem = { id: string; name: string; unit: string; total_stock: number; min_stock: number };
 type InvoiceDetail = { medicine: { name: string; unit: string }; qty: number; price: number; subtotal: number };
-type InvoiceData = { invoice_number: string; total_amount: number; created_at: string; user?: { name: string }; details: InvoiceDetail[] };
+type InvoiceData = { invoice_number: string; total_amount: number; created_at: string; user?: { name: string }; details: InvoiceDetail[]; payment_method?: string; credit_days?: number; customer_name?: string };
+type CreditItem = { id: string; customer_name: string; amount: number; credit_days: number; due_date: string; status: string; is_overdue: boolean; days_overdue: number; days_remaining: number; transaction: { invoice_number: string } };
 
 function fmt(n: number) { return `Rp ${n.toLocaleString("id-ID")}`; }
 
@@ -84,12 +85,25 @@ function StrukModal({ invoice, bayar, kembalian, onClose }: { invoice: InvoiceDa
             <div className="flex justify-between font-bold text-[13px] font-mono mt-1">
               <span>TOTAL</span><span>{fmt(invoice.total_amount)}</span>
             </div>
-            <div className="flex justify-between text-[12px] font-mono mt-1">
-              <span>Bayar</span><span>{fmt(bayar)}</span>
-            </div>
-            <div className="flex justify-between text-[12px] font-bold text-[#0f766e] font-mono">
-              <span>Kembalian</span><span>{fmt(kembalian)}</span>
-            </div>
+            {invoice.payment_method === "kredit" ? (
+              <>
+                <div className="flex justify-between text-[12px] font-mono mt-1">
+                  <span>Pelanggan</span><span className="font-bold">{invoice.customer_name}</span>
+                </div>
+                <div className="flex justify-between text-[12px] font-bold text-[#dc2626] font-mono">
+                  <span>KREDIT {invoice.credit_days} HARI</span><span>BELUM LUNAS</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-[12px] font-mono mt-1">
+                  <span>Bayar</span><span>{fmt(bayar)}</span>
+                </div>
+                <div className="flex justify-between text-[12px] font-bold text-[#0f766e] font-mono">
+                  <span>Kembalian</span><span>{fmt(kembalian)}</span>
+                </div>
+              </>
+            )}
             <div className="border-t border-dashed border-gray-400 my-2"></div>
             <div className="text-center text-[11px] text-[#98a2b3] font-mono">Terima kasih! Semoga lekas sembuh 🙏</div>
           </div>
@@ -124,6 +138,11 @@ export default function PenjualanPage() {
   const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [showAlert, setShowAlert] = useState(true);
   const [lastPayment, setLastPayment] = useState({ bayar: 0, kembalian: 0 });
+  const [paymentMethod, setPaymentMethod] = useState<"tunai" | "kredit">("tunai");
+  const [creditDays, setCreditDays] = useState<21 | 30>(21);
+  const [customerName, setCustomerName] = useState("");
+  const [credits, setCredits] = useState<CreditItem[]>([]);
+  const [showCredits, setShowCredits] = useState(false);
 
   const showToast = (type: "ok" | "err", msg: string) => {
     setToast({ type, msg });
@@ -132,6 +151,7 @@ export default function PenjualanPage() {
 
   useEffect(() => {
     fetch("/api/restock-alert").then(r => r.json()).then(d => { if (Array.isArray(d)) setLowStock(d); });
+    fetch("/api/kredit?status=BELUM_LUNAS").then(r => r.json()).then(d => { if (Array.isArray(d)) setCredits(d); });
   }, []);
 
   const fetchMedicines = useCallback(async () => {
@@ -181,26 +201,29 @@ export default function PenjualanPage() {
 
   const handleCheckout = async () => {
     if (cart.length === 0) { showToast("err", "Keranjang kosong!"); return; }
-    if (bayarNum < totalTagihan) { showToast("err", "Uang bayar kurang!"); return; }
+    if (paymentMethod === "tunai" && bayarNum < totalTagihan) { showToast("err", "Uang bayar kurang!"); return; }
+    if (paymentMethod === "kredit" && !customerName.trim()) { showToast("err", "Nama pelanggan kredit wajib diisi!"); return; }
     setProcessing(true);
     const res = await fetch("/api/penjualan", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         items: cart.map(c => ({ medicine_id: c.id, qty: c.qty })),
-        discount: diskonNominal
+        discount: diskonNominal,
+        payment_method: paymentMethod,
+        credit_days: creditDays,
+        customer_name: customerName,
       }),
     });
     const data = await res.json();
     setProcessing(false);
     if (!res.ok) { showToast("err", data.error || "Transaksi gagal."); return; }
     
-    // Simpan data bayar ke state agar tidak hilang di modal
-    setLastPayment({ bayar: bayarNum, kembalian: kembalian < 0 ? 0 : kembalian });
+    setLastPayment({ bayar: paymentMethod === "kredit" ? 0 : bayarNum, kembalian: paymentMethod === "kredit" ? 0 : (kembalian < 0 ? 0 : kembalian) });
     setInvoice(data); 
     
-    // Reset form
-    setCart([]); setBayar(""); setDiskon("");
+    setCart([]); setBayar(""); setDiskon(""); setCustomerName(""); setPaymentMethod("tunai");
     fetch("/api/restock-alert").then(r => r.json()).then(d => { if (Array.isArray(d)) setLowStock(d); });
+    fetch("/api/kredit?status=BELUM_LUNAS").then(r => r.json()).then(d => { if (Array.isArray(d)) setCredits(d); });
   };
 
   return (
@@ -221,9 +244,27 @@ export default function PenjualanPage() {
       )}
 
       {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Penjualan</h1>
-        <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">Stok dipotong otomatis berdasarkan FEFO</p>
+      <div className="mb-4 flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-[18px] md:text-[20px] font-bold text-[#101828] m-0">Penjualan</h1>
+          <p className="text-[13px] md:text-[14px] text-[#667085] mt-1 mb-0">Stok dipotong otomatis berdasarkan FEFO</p>
+        </div>
+        {credits.length > 0 && (
+          <button
+            onClick={() => setShowCredits(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-bold border transition-colors shrink-0 ${
+              credits.some(c => c.is_overdue)
+                ? "bg-[#fee2e2] border-[#fca5a5] text-[#dc2626] hover:bg-[#fecaca]"
+                : "bg-[#fffbeb] border-[#fcd34d] text-[#d97706] hover:bg-[#fef3c7]"
+            }`}
+          >
+            <CreditCard size={14} />
+            {credits.filter(c => c.is_overdue).length > 0
+              ? `${credits.filter(c => c.is_overdue).length} Kredit Jatuh Tempo!`
+              : `${credits.length} Kredit Aktif`
+            }
+          </button>
+        )}
       </div>
 
       {/* Alert Stok */}
@@ -239,6 +280,48 @@ export default function PenjualanPage() {
           <button onClick={() => setShowAlert(false)} className="text-[#d97706] hover:bg-[#fef3c7] p-1 rounded shrink-0 transition-colors">
             <X size={16} />
           </button>
+        </div>
+      )}
+
+      {/* Panel Kredit Jatuh Tempo */}
+      {showCredits && credits.length > 0 && (
+        <div className="bg-white border border-[#e4e7ec] rounded-lg mb-4 overflow-hidden">
+          <div className="px-4 py-2.5 bg-[#f8f9fb] border-b border-[#e4e7ec] flex items-center justify-between">
+            <span className="text-[13px] font-bold text-[#344054] flex items-center gap-1.5"><CreditCard size={14}/>Daftar Kredit Belum Lunas</span>
+            <button onClick={() => setShowCredits(false)} className="text-[#98a2b3] hover:text-[#344054] p-1 rounded"><X size={14}/></button>
+          </div>
+          <div className="divide-y divide-[#f0f2f5] max-h-[260px] overflow-y-auto">
+            {credits.map(cr => (
+              <div key={cr.id} className={`px-4 py-2.5 flex items-center gap-3 ${ cr.is_overdue ? "bg-[#fff5f5]" : "" }`}>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-[#101828] truncate">{cr.customer_name}</div>
+                  <div className="text-[11px] text-[#667085]">{cr.transaction?.invoice_number} · Kredit {cr.credit_days} hari</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[13px] font-bold text-[#101828]">{fmt(cr.amount)}</div>
+                  {cr.is_overdue ? (
+                    <div className="text-[11px] font-bold text-[#dc2626] flex items-center gap-1 justify-end">
+                      <AlertTriangle size={10}/> Telat {cr.days_overdue} hari
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-[#667085] flex items-center gap-1 justify-end">
+                      <Clock size={10}/> Sisa {cr.days_remaining} hari
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={async () => {
+                    await fetch("/api/kredit", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ credit_id: cr.id }) });
+                    fetch("/api/kredit?status=BELUM_LUNAS").then(r=>r.json()).then(d=>{ if(Array.isArray(d)) setCredits(d); });
+                    showToast("ok", `Kredit ${cr.customer_name} ditandai lunas!`);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 bg-[#f0fdf4] border border-[#bbf7d0] text-[#14532d] rounded text-[11px] font-bold hover:bg-[#dcfce7] transition-colors shrink-0"
+                >
+                  <CheckCircle size={12}/> Lunas
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -316,59 +399,127 @@ export default function PenjualanPage() {
           {cart.length > 0 && (
             <div className="bg-white border border-[#e4e7ec] rounded-lg p-4 order-last lg:order-none">
               <div className="text-[14px] font-semibold text-[#344054] mb-3">Pembayaran</div>
-              <div className="mb-3">
-                <label className="text-[12px] font-semibold text-[#667085] mb-1 block">Uang Bayar (Rp)</label>
-                <input
-                  type="text"
-                  placeholder="0"
-                  value={bayar}
-                  onChange={e => {
-                    const v = e.target.value.replace(/\D/g, "");
-                    setBayar(v ? parseInt(v).toLocaleString("id-ID") : "");
-                  }}
-                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[16px] font-mono font-bold focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
-                />
-              </div>
-              
-              {/* Nominal cepat */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {[10000, 20000, 50000, 100000].map(n => {
-                  const isActive = bayarNum === n;
-                  return (
-                    <button 
-                      key={n} 
-                      onClick={() => setBayar(n.toLocaleString("id-ID"))} 
-                      className={`px-2.5 py-1.5 border rounded text-[12px] font-semibold transition-colors ${
-                        isActive 
-                          ? "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] shadow-sm" 
-                          : "border-[#d0d5dd] bg-[#f8f9fb] text-[#344054] hover:bg-gray-100"
-                      }`}
-                    >
-                      {fmt(n)}
-                    </button>
-                  );
-                })}
-                <button 
-                  onClick={() => setBayar(totalTagihan.toLocaleString("id-ID"))} 
-                  className={`px-2.5 py-1.5 border rounded text-[12px] font-bold transition-colors ${
-                    bayarNum === totalTagihan && totalTagihan > 0
-                      ? "border-[#0f766e] bg-[#0f766e] text-white shadow-sm"
-                      : "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] hover:bg-[#e6fbf0]"
+
+              {/* Toggle Tunai / Kredit */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setPaymentMethod("tunai")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-[13px] font-bold border transition-colors ${
+                    paymentMethod === "tunai"
+                      ? "bg-[#0f766e] text-white border-[#0f766e]"
+                      : "bg-white text-[#344054] border-[#d0d5dd] hover:bg-gray-50"
                   }`}
                 >
-                  Uang Pas
+                  💵 Tunai
+                </button>
+                <button
+                  onClick={() => setPaymentMethod("kredit")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-[13px] font-bold border transition-colors ${
+                    paymentMethod === "kredit"
+                      ? "bg-[#7c3aed] text-white border-[#7c3aed]"
+                      : "bg-white text-[#344054] border-[#d0d5dd] hover:bg-gray-50"
+                  }`}
+                >
+                  <CreditCard size={14}/> Kredit
                 </button>
               </div>
 
-              {bayarNum > 0 && (
-                <div className={`flex justify-between items-center px-3 py-2.5 rounded-md text-[14px] font-bold ${kembalian >= 0 ? 'bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]' : 'bg-[#fee2e2] text-[#991b1b] border border-[#fca5a5]'}`}>
-                  <span>{kembalian >= 0 ? "Kembalian" : "Kurang"}</span>
-                  <span className="text-[16px]">{fmt(Math.abs(kembalian))}</span>
+              {/* Form Kredit */}
+              {paymentMethod === "kredit" && (
+                <div className="bg-[#f5f3ff] border border-[#c4b5fd] rounded-md p-3 mb-3 flex flex-col gap-2">
+                  <div>
+                    <label className="text-[12px] font-semibold text-[#5b21b6] mb-1 block">Nama Pelanggan *</label>
+                    <input
+                      type="text"
+                      placeholder="Masukkan nama pelanggan..."
+                      value={customerName}
+                      onChange={e => setCustomerName(e.target.value)}
+                      className="w-full px-3 py-2 border border-[#c4b5fd] rounded-md text-[14px] focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] bg-white transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[12px] font-semibold text-[#5b21b6] mb-1 block">Jangka Waktu Kredit</label>
+                    <div className="flex gap-2">
+                      {([21, 30] as const).map(d => (
+                        <button
+                          key={d}
+                          onClick={() => setCreditDays(d)}
+                          className={`flex-1 py-2 rounded-md text-[13px] font-bold border transition-colors ${
+                            creditDays === d
+                              ? "bg-[#7c3aed] text-white border-[#7c3aed]"
+                              : "bg-white text-[#5b21b6] border-[#c4b5fd] hover:bg-[#ede9fe]"
+                          }`}
+                        >
+                          {d} Hari
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-[#5b21b6] flex items-center gap-1">
+                    <Clock size={11}/> Jatuh tempo: {(() => { const d = new Date(); d.setDate(d.getDate() + creditDays); return d.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }); })()}
+                  </div>
                 </div>
+              )}
+
+              {/* Form Tunai */}
+              {paymentMethod === "tunai" && (
+                <>
+                  <div className="mb-3">
+                    <label className="text-[12px] font-semibold text-[#667085] mb-1 block">Uang Bayar (Rp)</label>
+                    <input
+                      type="text"
+                      placeholder="0"
+                      value={bayar}
+                      onChange={e => {
+                        const v = e.target.value.replace(/\D/g, "");
+                        setBayar(v ? parseInt(v).toLocaleString("id-ID") : "");
+                      }}
+                      className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[16px] font-mono font-bold focus:outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors"
+                    />
+                  </div>
+                  
+                  {/* Nominal cepat */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {[10000, 20000, 50000, 100000].map(n => {
+                      const isActive = bayarNum === n;
+                      return (
+                        <button 
+                          key={n} 
+                          onClick={() => setBayar(n.toLocaleString("id-ID"))} 
+                          className={`px-2.5 py-1.5 border rounded text-[12px] font-semibold transition-colors ${
+                            isActive 
+                              ? "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] shadow-sm" 
+                              : "border-[#d0d5dd] bg-[#f8f9fb] text-[#344054] hover:bg-gray-100"
+                          }`}
+                        >
+                          {fmt(n)}
+                        </button>
+                      );
+                    })}
+                    <button 
+                      onClick={() => setBayar(totalTagihan.toLocaleString("id-ID"))} 
+                      className={`px-2.5 py-1.5 border rounded text-[12px] font-bold transition-colors ${
+                        bayarNum === totalTagihan && totalTagihan > 0
+                          ? "border-[#0f766e] bg-[#0f766e] text-white shadow-sm"
+                          : "border-[#0f766e] bg-[#f0fdf4] text-[#0f766e] hover:bg-[#e6fbf0]"
+                      }`}
+                    >
+                      Uang Pas
+                    </button>
+                  </div>
+
+                  {bayarNum > 0 && (
+                    <div className={`flex justify-between items-center px-3 py-2.5 rounded-md text-[14px] font-bold ${kembalian >= 0 ? 'bg-[#f0fdf4] text-[#14532d] border border-[#bbf7d0]' : 'bg-[#fee2e2] text-[#991b1b] border border-[#fca5a5]'}`}>
+                      <span>{kembalian >= 0 ? "Kembalian" : "Kurang"}</span>
+                      <span className="text-[16px]">{fmt(Math.abs(kembalian))}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
         </div>
+
 
         {/* Kanan: Keranjang */}
         <div className="w-full lg:w-[380px] shrink-0">
@@ -460,12 +611,21 @@ export default function PenjualanPage() {
               
               <button
                 onClick={handleCheckout}
-                disabled={processing || cart.length === 0 || (bayarNum > 0 && kembalian < 0)}
+                disabled={
+                  processing || cart.length === 0 ||
+                  (paymentMethod === "tunai" && bayarNum > 0 && kembalian < 0) ||
+                  (paymentMethod === "kredit" && !customerName.trim())
+                }
                 className={`w-full py-2.5 rounded-md text-[14px] font-bold text-white transition-colors flex justify-center items-center gap-2 ${
-                  processing || cart.length === 0 ? "bg-[#99d6d1] cursor-not-allowed" : "bg-[#0f766e] hover:bg-[#0d6963] shadow-sm"
+                  processing || cart.length === 0 ||
+                  (paymentMethod === "kredit" && !customerName.trim())
+                    ? "bg-[#99d6d1] cursor-not-allowed"
+                    : paymentMethod === "kredit"
+                      ? "bg-[#7c3aed] hover:bg-[#6d28d9] shadow-sm"
+                      : "bg-[#0f766e] hover:bg-[#0d6963] shadow-sm"
                 }`}
               >
-                {processing ? "Memproses..." : "Selesaikan Transaksi"}
+                {processing ? "Memproses..." : paymentMethod === "kredit" ? `💳 Simpan Kredit ${creditDays} Hari` : "Selesaikan Transaksi"}
               </button>
             </div>
           </div>

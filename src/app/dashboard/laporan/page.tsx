@@ -17,6 +17,18 @@ type SaleTransaction = {
  }[];
 };
 
+type PurchaseItem = {
+ id: string;
+ batch_number: string;
+ stock: number;
+ expired_date: string;
+ created_at: string;
+ subtotal: number;
+ actual_purchase_price: number;
+ medicine: { name: string; unit: string; buy_price: number } | null;
+ supplier: { name: string } | null;
+};
+
 type ExpiredBatch = {
  id: string;
  batch_number: string;
@@ -36,13 +48,14 @@ function formatRupiah(n: number | null | undefined) {
 }
 
 export default function LaporanPage() {
- const [activeTab, setActiveTab] = useState<"penjualan" | "expired" | "terlaris">("penjualan");
+ const [activeTab, setActiveTab] = useState<"penjualan" | "pembelian" | "expired" | "terlaris">("penjualan");
  const [from, setFrom] = useState(() => {
  const d = new Date(); d.setDate(1);
  return d.toISOString().split("T")[0];
  });
  const [to, setTo] = useState(new Date().toISOString().split("T")[0]);
  const [sales, setSales] = useState<SaleTransaction[]>([]);
+ const [purchases, setPurchases] = useState<PurchaseItem[]>([]);
  const [expired, setExpired] = useState<ExpiredBatch[]>([]);
  const [terlaris, setTerlaris] = useState<TopMedicine[]>([]);
  const [loading, setLoading] = useState(false);
@@ -54,6 +67,10 @@ export default function LaporanPage() {
  const res = await fetch(`/api/laporan?type=penjualan&from=${from}&to=${to}`);
  const data = await res.json();
  setSales(Array.isArray(data) ? data : []);
+ } else if (activeTab === "pembelian") {
+ const res = await fetch(`/api/laporan?type=pembelian&from=${from}&to=${to}`);
+ const data = await res.json();
+ setPurchases(Array.isArray(data) ? data : []);
  } else if (activeTab === "expired") {
  const res = await fetch("/api/laporan?type=expired");
  const data = await res.json();
@@ -101,8 +118,28 @@ export default function LaporanPage() {
     XLSX.writeFile(workbook, `Laporan_Penjualan_${from}_sampai_${to}.xlsx`);
   };
 
+  const handleExportPembelian = async () => {
+    if (!purchases || purchases.length === 0) return;
+    const XLSX = await import("xlsx");
+    const rows = purchases.map(p => ({
+      "Tanggal": new Date(p.created_at).toLocaleString("id-ID"),
+      "Supplier": p.supplier?.name || "Tanpa Supplier",
+      "Nama Obat": p.medicine?.name || "-",
+      "No Batch": p.batch_number,
+      "Expired": p.expired_date,
+      "Harga Beli (Rp)": p.actual_purchase_price || 0,
+      "Qty": p.stock,
+      "Subtotal (Rp)": p.subtotal,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Pembelian");
+    XLSX.writeFile(workbook, `Laporan_Pembelian_${from}_sampai_${to}.xlsx`);
+  };
+
  const tabs = [
  { key: "penjualan" as const, label: "Penjualan", icon: ShoppingCart },
+ { key: "pembelian" as const, label: "Pembelian", icon: Download },
  { key: "expired" as const, label: "Hampir Expired", icon: CalendarX },
  { key: "terlaris" as const, label: "Obat Terlaris", icon: TrendingUp },
  ];
@@ -267,6 +304,63 @@ export default function LaporanPage() {
    </button>
  </div>
  </div>
+ </div>
+ ) : activeTab === "pembelian" ? (
+ <div className="space-y-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-zinc-200 flex items-center gap-3">
+      <div className="bg-orange-50 p-3 rounded-xl"><Download className="h-5 w-5 text-orange-600" /></div>
+      <div>
+        <p className="text-xs text-zinc-500">Total Transaksi Masuk</p>
+        <p className="font-bold text-zinc-900">{purchases.length}</p>
+      </div>
+    </div>
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-zinc-200 flex items-center gap-3">
+      <div className="bg-red-50 p-3 rounded-xl"><BarChart3 className="h-5 w-5 text-red-600" /></div>
+      <div>
+        <p className="text-xs text-zinc-500">Total Pengeluaran (Beli Obat)</p>
+        <p className="font-bold text-zinc-900">{formatRupiah(purchases.reduce((s, p) => s + p.subtotal, 0))}</p>
+      </div>
+    </div>
+  </div>
+  <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="bg-zinc-50 border-b border-zinc-200">
+          <th className="text-left px-4 py-3 font-semibold text-zinc-600">Tanggal</th>
+          <th className="text-left px-4 py-3 font-semibold text-zinc-600">Supplier</th>
+          <th className="text-left px-4 py-3 font-semibold text-zinc-600">Nama Obat</th>
+          <th className="text-right px-4 py-3 font-semibold text-zinc-600 hidden md:table-cell">Qty</th>
+          <th className="text-right px-4 py-3 font-semibold text-zinc-600 hidden md:table-cell">Harga Satuan</th>
+          <th className="text-right px-4 py-3 font-semibold text-zinc-600">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-zinc-100">
+        {purchases.length === 0 ? (
+          <tr><td colSpan={6} className="text-center py-8 text-zinc-400">Tidak ada data pembelian.</td></tr>
+        ) : purchases.map(p => (
+          <tr key={p.id} className="hover:bg-zinc-50">
+            <td className="px-4 py-3 text-zinc-500 text-xs whitespace-nowrap">
+              {new Date(p.created_at).toLocaleString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' })}
+            </td>
+            <td className="px-4 py-3 text-zinc-700 whitespace-nowrap">{p.supplier?.name || "—"}</td>
+            <td className="px-4 py-3 font-medium text-zinc-900">
+              {p.medicine?.name}
+              <span className="block text-[11px] text-zinc-500 font-mono mt-0.5">Batch: {p.batch_number}</span>
+            </td>
+            <td className="px-4 py-3 text-zinc-500 text-right hidden md:table-cell whitespace-nowrap">{p.stock} <span className="text-[11px]">{p.medicine?.unit}</span></td>
+            <td className="px-4 py-3 text-zinc-500 text-right hidden md:table-cell whitespace-nowrap">{formatRupiah(p.actual_purchase_price)}</td>
+            <td className="px-4 py-3 font-bold text-red-600 text-right whitespace-nowrap">{formatRupiah(p.subtotal)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <div className="flex justify-end p-4">
+      <button onClick={handleExportPembelian} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm">
+        <Download size={16} /> Export Excel
+      </button>
+    </div>
+  </div>
  </div>
  ) : activeTab === "expired" ? (
  <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-x-auto">

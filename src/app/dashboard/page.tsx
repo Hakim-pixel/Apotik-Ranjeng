@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { AlertTriangle, ShoppingCart, CalendarDays, Package, Pill, PackageCheck } from "lucide-react";
+import { AlertTriangle, ShoppingCart, CalendarDays, Package, Pill, PackageCheck, CreditCard } from "lucide-react";
 
 async function getStats(role: string) {
   const today = new Date().toISOString().split("T")[0];
@@ -14,6 +14,7 @@ async function getStats(role: string) {
     .from("transactions")
     .select("total_amount")
     .eq("type", "OUT")
+    .eq("payment_method", "tunai")
     .gte("created_at", `${today}T00:00:00`)
     .lte("created_at", `${today}T23:59:59`);
 
@@ -44,7 +45,21 @@ async function getStats(role: string) {
     hampirExpired = cntExp ?? 0;
   }
 
-  return { totalObat, stokMenipis, hampirExpired, totalPenjualanHari, totalTransaksiHari };
+  // Kredit jatuh tempo
+  const today2 = new Date().toISOString().split("T")[0];
+  const { data: overdueCredits } = await supabase
+    .from("credits")
+    .select("id, customer_name, amount, due_date")
+    .eq("status", "BELUM_LUNAS")
+    .lt("due_date", today2);
+
+  const { data: activeCredits } = await supabase
+    .from("credits")
+    .select("id, customer_name, amount, due_date, credit_days")
+    .eq("status", "BELUM_LUNAS")
+    .order("due_date", { ascending: true });
+
+  return { totalObat, stokMenipis, hampirExpired, totalPenjualanHari, totalTransaksiHari, overdueCredits: overdueCredits || [], activeCredits: activeCredits || [] };
 }
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
@@ -79,11 +94,39 @@ export default async function DashboardPage() {
         <StatCard label="Pendapatan Hari Ini" value={`Rp ${stats.totalPenjualanHari.toLocaleString("id-ID")}`} color="#0f766e" />
         <StatCard label="Transaksi Hari Ini" value={stats.totalTransaksiHari} color="#2563eb" />
         <StatCard label="Stok Menipis" value={stats.stokMenipis.length} color="#d97706" />
-        {role === "ADMIN"
-          ? <StatCard label="Hampir Expired" value={stats.hampirExpired} color="#dc2626" />
-          : <StatCard label="Total Jenis Obat" value={stats.stokMenipis.length === 0 ? "✅ Aman" : "⚠️ Perlu Cek"} color="#7c3aed" />
-        }
+        <StatCard
+          label="Kredit Jatuh Tempo"
+          value={stats.overdueCredits.length > 0 ? `⚠️ ${stats.overdueCredits.length} Overdue` : stats.activeCredits.length > 0 ? `${stats.activeCredits.length} Aktif` : "✅ Nihil"}
+          color={stats.overdueCredits.length > 0 ? "#dc2626" : "#7c3aed"}
+        />
       </div>
+
+      {/* Warning Kredit Jatuh Tempo */}
+      {stats.overdueCredits.length > 0 && (
+        <div className="bg-[#fff5f5] border border-[#fca5a5] rounded-lg p-4 mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <CreditCard size={16} color="#dc2626" />
+            <span className="text-[14px] font-bold text-[#991b1b]">⚠️ {stats.overdueCredits.length} Kredit Sudah Jatuh Tempo!</span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {stats.overdueCredits.map((cr) => {
+              const diffDays = Math.floor((new Date().getTime() - new Date(cr.due_date).getTime()) / 86400000);
+              return (
+                <div key={cr.id} className="flex items-center justify-between bg-white border border-[#fecaca] rounded-md px-3 py-2 text-[13px]">
+                  <div>
+                    <span className="font-bold text-[#101828]">{cr.customer_name}</span>
+                    <span className="text-[#dc2626] font-semibold ml-2">Telat {diffDays} hari</span>
+                  </div>
+                  <span className="font-bold text-[#101828]">Rp {Number(cr.amount).toLocaleString("id-ID")}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 text-[12px] text-[#991b1b]">
+            Tandai lunas di menu <strong>Penjualan</strong> → tombol <strong>Kredit Aktif</strong>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Aksi Cepat */}

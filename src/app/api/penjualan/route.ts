@@ -11,7 +11,10 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { items, discount } = body; // [{ medicine_id, qty }], discount: number
+  // payment_method: "tunai" | "kredit"
+  // credit_days: 21 | 30 (jika kredit)
+  // customer_name: string (jika kredit)
+  const { items, discount, payment_method, credit_days, customer_name } = body;
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: "Keranjang belanja kosong." }, { status: 400 });
@@ -83,10 +86,19 @@ export async function POST(req: Request) {
   const discountAmount = discount ? Number(discount) : 0;
   const finalAmount = Math.max(0, totalAmount - discountAmount);
 
+  // Tentukan payment method (default tunai)
+  const paymentMethod = payment_method === "kredit" ? "kredit" : "tunai";
+
   // Buat transaksi header
   const { data: transaction, error: txError } = await supabase
     .from("transactions")
-    .insert([{ invoice_number: invoiceNumber, type: "OUT", user_id: session.user.id, total_amount: finalAmount }])
+    .insert([{ 
+      invoice_number: invoiceNumber, 
+      type: "OUT", 
+      user_id: session.user.id, 
+      total_amount: finalAmount,
+      payment_method: paymentMethod,
+    }])
     .select()
     .single();
 
@@ -103,6 +115,27 @@ export async function POST(req: Request) {
     await supabase.from("medicine_batches").update({ stock: bu.newStock }).eq("id", bu.id);
   }
 
+  // Jika kredit, buat record kredit
+  if (paymentMethod === "kredit") {
+    const days = credit_days === 30 ? 30 : 21;
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + days);
+
+    const { error: creditError } = await supabase.from("credits").insert([{
+      transaction_id: transaction.id,
+      user_id: session.user.id,
+      customer_name: customer_name || "Pelanggan",
+      amount: finalAmount,
+      credit_days: days,
+      due_date: dueDate.toISOString().split("T")[0],
+      status: "BELUM_LUNAS",
+    }]);
+    if (creditError) {
+      console.error("[KREDIT INSERT ERROR]", creditError.message);
+      // Jangan batalkan transaksi, tapi log errornya
+    }
+  }
+
   // Ambil detail lengkap dengan nama obat untuk struk
   const { data: fullDetails } = await supabase
     .from("transaction_details")
@@ -112,6 +145,9 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ...transaction,
     details: fullDetails || finalDetails,
+    payment_method: paymentMethod,
+    credit_days: paymentMethod === "kredit" ? (credit_days === 30 ? 30 : 21) : null,
+    customer_name: paymentMethod === "kredit" ? (customer_name || "Pelanggan") : null,
   }, { status: 201 });
 }
 

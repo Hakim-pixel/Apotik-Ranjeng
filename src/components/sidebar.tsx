@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   Truck,
-  Tags
+  Tags,
+  CreditCard
 } from "lucide-react";
 
 const navItems = [
@@ -31,6 +32,7 @@ const navItems = [
   { label: "Data Supplier", href: "/dashboard/supplier", icon: Truck, roles: ["ADMIN"] },
   { label: "Pembelian", href: "/dashboard/pembelian", icon: PackagePlus, roles: ["ADMIN"] },
   { label: "Penjualan", href: "/dashboard/penjualan", icon: ShoppingCart, roles: ["ADMIN", "KASIR"] },
+  { label: "Kredit Pelanggan", href: "/dashboard/kredit", icon: CreditCard, roles: ["ADMIN", "KASIR"] },
   { label: "Rekap Harian", href: "/dashboard/rekap-harian", icon: CalendarDays, roles: ["ADMIN"] },
   { label: "Laporan", href: "/dashboard/laporan", icon: BarChart3, roles: ["ADMIN"] },
   { label: "Manajemen User", href: "/dashboard/users", icon: Users, roles: ["ADMIN"] },

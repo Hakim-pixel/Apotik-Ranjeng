@@ -24,7 +24,7 @@ export default function StokPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     medicine_id: "", batch_number: "", expired_date: "",
-    stock: "", supplier_id: ""
+    stock: "", supplier_id: "", purchase_price: ""
   });
   const [selectedMedName, setSelectedMedName] = useState("");
   const [medResults, setMedResults] = useState<Medicine[]>([]);
@@ -78,7 +78,8 @@ export default function StokPage() {
       body: JSON.stringify({
         ...form,
         stock: Number(form.stock),
-        supplier_id: form.supplier_id || null
+        supplier_id: form.supplier_id || null,
+        purchase_price: form.purchase_price ? Number(form.purchase_price) : null
       }),
     });
     const data = await res.json();
@@ -86,7 +87,7 @@ export default function StokPage() {
     if (!res.ok) { showToast("error", data.error || "Gagal menyimpan."); return; }
     showToast("success", "Batch baru berhasil ditambahkan!");
     setShowModal(false);
-    setForm({ medicine_id: "", batch_number: "", expired_date: "", stock: "", supplier_id: "" });
+    setForm({ medicine_id: "", batch_number: "", expired_date: "", stock: "", supplier_id: "", purchase_price: "" });
     setSelectedMedName("");
     fetchBatches();
   };
@@ -265,6 +266,14 @@ export default function StokPage() {
                   <option value="">-- Pilih Supplier --</option>
                   {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
+              </div>
+              
+              <div>
+                <label className="block text-[13px] font-bold text-[#344054] mb-1.5">Harga Beli Satuan Obat (Rp) - Opsional</label>
+                <input type="number" min="0" placeholder="Biarkan kosong jika harga tidak berubah" value={form.purchase_price}
+                  onChange={(e) => setForm({ ...form, purchase_price: e.target.value })}
+                  className="w-full px-3 py-2 border border-[#d0d5dd] rounded-md text-[13.5px] outline-none focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] transition-colors" />
+                <p className="text-[11px] text-[#667085] mt-1">Isi jika harga beli dari supplier berbeda dari harga master data obat.</p>
               </div>
             </div>
             

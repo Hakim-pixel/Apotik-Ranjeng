@@ -38,6 +38,32 @@ export async function GET(req: Request) {
     return NextResponse.json(data);
   }
 
+  if (type === "pembelian") {
+    const { data, error } = await supabase
+      .from("medicine_batches")
+      .select(`
+        id, batch_number, stock, expired_date, created_at, purchase_price,
+        medicine:medicines(name, unit, buy_price),
+        supplier:suppliers(name)
+      `)
+      .gte("created_at", `${from}T00:00:00`)
+      .lte("created_at", `${to}T23:59:59`)
+      .order("created_at", { ascending: false });
+    
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    
+    // Add subtotal based on purchase_price
+    const mapped = (data || []).map((b: any) => {
+      const priceToUse = b.purchase_price !== null ? b.purchase_price : (b.medicine?.buy_price || 0);
+      return {
+        ...b,
+        actual_purchase_price: priceToUse,
+        subtotal: (b.stock || 0) * priceToUse
+      };
+    });
+    return NextResponse.json(mapped);
+  }
+
   if (type === "terlaris") {
     const { data, error } = await supabase
       .from("transactions")
